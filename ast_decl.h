@@ -15,6 +15,7 @@
 
 #include "ast.h"
 #include "ast_type.h"
+#include "hashtable.h"
 #include "list.h"
 
 class Identifier;
