@@ -32,13 +32,47 @@ void Program::Check()
     }
 }
 
-ClassDecl *Program::GetClass(char *name);
+ClassDecl *Program::GetClass(char *name)
 {
     Decl *dec = this.sym_->Lookup(name);
     ClassDecl *olddec = dynamic_cast<ClassDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
     }
+
+    return olddec;
+}
+
+FnDecl *Program::GetFn(char *name)
+{
+    Decl *dec = this.sym_->Lookup(name);
+    FnDecl *olddec = dynamic_cast<FnDecl*>(dec);
+    if (olddec != NULL) {
+        olddec->Check();
+    }
+
+    return olddec;
+}
+
+VarDecl *Program::GetVar(char *name)
+{
+    Decl *dec = this.sym_->Lookup(name);
+    VarDecl *olddec = dynamic_cast<VarDecl*>(dec);
+    if (olddec != NULL) {
+        olddec->Check();
+    }
+
+    return olddec;
+}
+
+InterfaceDecl *Program::GetInterface(char *name)
+{
+    Decl *dec = this.sym_->Lookup(name);
+    InterfaceDecl *olddec = dynamic_cast<InterfaceDecl*>(dec);
+    if (olddec != NULL) {
+        olddec->Check();
+    }
+
     return olddec;
 }
 
@@ -93,5 +127,3 @@ PrintStmt::PrintStmt(List<Expr*> *a)
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
 }
-
-
