@@ -36,28 +36,56 @@ void set_type(Type *t)
 }
 
 
-IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
+IntConstant::IntConstant(yyltype loc, int val) : Expr(loc)
+{
     value = val;
+    type_ = Type::intType;
+
+    return;
 }
 
-DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc) {
+
+DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc)
+{
     value = val;
+    type_ = Type::doubleType;
+
+    return;
 }
 
-BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
+
+BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc)
+{
     value = val;
+    type_ = Type::boolType;
+
+    return;
 }
 
-StringConstant::StringConstant(yyltype loc, const char *val) : Expr(loc) {
+
+StringConstant::StringConstant(yyltype loc, const char *val) :
+    Expr(loc)
+{
     Assert(val != NULL);
     value = strdup(val);
+    type_ = Type::stringType;
+
+    return;
+}
+
+
+NullConstant(yyltype loc) : Expr(loc)
+{
+    type_ = Type::nullType;
+
+    return;
 }
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
     Assert(tok != NULL);
     strncpy(tokenString, tok, sizeof(tokenString));
 }
-CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r) 
+CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
   : Expr(Join(l->GetLocation(), r->GetLocation())) {
     Assert(l != NULL && o != NULL && r != NULL);
     (op=o)->SetParent(this);

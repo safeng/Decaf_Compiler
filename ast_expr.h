@@ -82,7 +82,7 @@ class StringConstant : public Expr
 class NullConstant: public Expr
 {
     public:
-        NullConstant(yyltype loc) : Expr(loc) {}
+        NullConstant(yyltype loc);
 };
 
 class Operator : public Node
