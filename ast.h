@@ -46,7 +46,7 @@ class Node
         Node *parent;
         bool checked_;
 
-        virtual void DoCheck(void) = 0;
+        virtual void DoCheck(void);
 
     public:
         Node(yyltype loc);
@@ -67,7 +67,7 @@ class Node
             return parent;
         }
 
-        void Check(void);
+        virtual void Check(void);
 
         virtual ClassDecl *GetClass(char *name);
         virtual FnDecl *GetFn(char *name);
