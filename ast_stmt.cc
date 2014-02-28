@@ -108,11 +108,31 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
     return;
 }
 
+void StmtBlock::DoCheck(void)
+{
+    for (int i = 0; i < this->decls->NumElements(); i++) {
+        this->decls->Nth(i)->Check();
+    }
+    for (int i = 0; i < this->stmts->NumElements(); i++) {
+        this->stmts->Nth(i)->Check();
+    }
+
+    return;
+}
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b)
 {
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this);
     (body=b)->SetParent(this);
+}
+
+void ConditionalStmt::DoCheck(void)
+{
+    this->test->Check();
+    this->body->Check();
+
+    return;
 }
 
 LoopStmt::LoopStmt(Expr *testExpr, Stmt *body) :
@@ -128,6 +148,16 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b)
     (step=s)->SetParent(this);
 }
 
+void ForStmt::DoCheck(void)
+{
+    this->init->Check();
+    this->test->Check();
+    this->step->Check();
+    this->body->Check();
+
+    return;
+}
+
 WhileStmt::WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body)
 {
     return;
@@ -138,6 +168,15 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb)
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
+}
+
+void IfStmt::DoCheck(void)
+{
+    this->test->Check();
+    this->body->Check();
+    this->elseBody->Check();
+
+    return;
 }
 
 BreakStmt::BreakStmt(yyltype loc) : Stmt(loc)
@@ -151,8 +190,24 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc)
     (expr=e)->SetParent(this);
 }
 
+void ReturnStmt::DoCheck(void)
+{
+    this->expr->Check();
+
+    return;
+}
+
 PrintStmt::PrintStmt(List<Expr*> *a)
 {
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
+}
+
+void PrintStmt::DoCheck(void)
+{
+    for (int i = 0; i < this->args->NumElements(); i++) {
+        this->args->Nth(i)->Check();
+    }
+
+    return;
 }
