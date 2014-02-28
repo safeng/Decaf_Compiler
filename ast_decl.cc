@@ -69,6 +69,25 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
     return;
 }
 
+void ClassDecl::DoCheck(void)
+{
+    if (this->extends != NULL) {
+        this->extends->Check();
+    }
+
+    // TODO: Check declaration conflict for extend
+
+    for (int i = 0; i < this->implements->NumElements(); i++) {
+        this->implements->Nth(i)->Check();
+    }
+
+    // TODO: Check declaration conflict for implements
+
+    // TODO: Do implementation completion check
+
+    return;
+}
+
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 {
@@ -131,10 +150,10 @@ void FnDecl::DoCheck(void)
 {
     this->returnType->DoCheck();
     for (int i = 0; i < this->formals->NumElements(); i++) {
-        this->formals->Nth(i)->DoCheck();
+        this->formals->Nth(i)->Check();
     }
     if (body != NULL) {
-        this->body->DoCheck();
+        this->body->Check();
     }
 
     return;

@@ -51,6 +51,7 @@ class ClassDecl : public Decl
         List<Decl*> *members;
         NamedType *extends;
         List<NamedType*> *implements;
+        void DoCheck(void);
 
     public:
         ClassDecl(Identifier *name, NamedType *extends,
