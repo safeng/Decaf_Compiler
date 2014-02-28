@@ -50,6 +50,9 @@ class Stmt : public Node
 
 class StmtBlock : public Stmt
 {
+    private:
+        Hashtable<Node> *sym_;
+
     protected:
         List<VarDecl*> *decls;
         List<Stmt*> *stmts;

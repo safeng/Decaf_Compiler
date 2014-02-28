@@ -47,6 +47,17 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
+    this->sym_ = new Hashtable();
+    for (int i = 0; i < decls->NumElements; i++) {
+        Decl *newdec = decls->Nth(i);
+        char *id = sym_->id->Name;
+        Decl *olddec = this->sym_->Lookup(id);
+        if (olddec == NULL) {
+            this->sym_->Enter(id, dec);
+        } else {
+            ReportError::DeclConflict(newdec, olddec);
+        }
+    }
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b)
