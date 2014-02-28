@@ -25,11 +25,13 @@ Program::Program(List<Decl*> *d)
     }
 }
 
-void Program::Check()
+void Program::DoCheck(void)
 {
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->Check();
     }
+
+    return;
 }
 
 ClassDecl *Program::GetClass(char *name)

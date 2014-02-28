@@ -31,10 +31,10 @@ class Program : public Node
 
     protected:
         List<Decl*> *decls;
+        void DoCheck(void);
 
     public:
         Program(List<Decl*> *declList);
-        void Check();
         ClassDecl *GetClass(char *name);
         FnDecl *GetFn(char *name);
         VarDecl *GetVar(char *name);
