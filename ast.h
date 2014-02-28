@@ -34,6 +34,10 @@
 #include "location.h"
 #include <iostream>
 
+class FnDecl;
+class VarDecl;
+class ClassDecl;
+
 class Node
 {
     protected:
@@ -60,6 +64,10 @@ class Node
         }
 
         virtual void Check();
+
+        ClassDecl *GetClass(char *name);
+        FnDecl *GetFn(char *name);
+        VarDecl *GetVar(char *name);
 };
 
 
