@@ -9,6 +9,33 @@
 #include "errors.h"
 
 
+Expr::Expr(yyltype loc) : Stmt(loc)
+{
+    type_ = NULL;
+
+    return;
+}
+
+Expr::Expr() : Stmt()
+{
+    type_ = NULL;
+
+    return;
+}
+
+Type *type(void)
+{
+    return this->type_;
+}
+
+void set_type(Type *t)
+{
+    this->type_ = t;
+
+    return;
+}
+
+
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
 }
