@@ -8,7 +8,8 @@
 #include "ast_expr.h"
 
 
-Program::Program(List<Decl*> *d) {
+Program::Program(List<Decl*> *d)
+{
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
     this.sym_ = new Hashtable();
@@ -20,12 +21,12 @@ Program::Program(List<Decl*> *d) {
             this.sym_->Enter(id, dec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
-
         }
     }
 }
 
-void Program::Check() {
+void Program::Check()
+{
     /* pp3: here is where the semantic analyzer is kicked off.
      *      The general idea is perform a tree traversal of the
      *      entire program, examining all constructs for compliance
@@ -35,37 +36,53 @@ void Program::Check() {
      */
 }
 
-StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
+ClassDecl *Program::GetClass(char *name);
+{
+    Decl *dec = this.sym_->Lookup(name);
+    ClassDecl *olddec = dynamic_cast<ClassDecl*>(dec);
+    if (olddec != NULL) {
+        olddec->Check();
+    }
+    return olddec;
+}
+
+StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
+{
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
 }
 
-ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
+ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b)
+{
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this);
     (body=b)->SetParent(this);
 }
 
-ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
+ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b)
+{
     Assert(i != NULL && t != NULL && s != NULL && b != NULL);
     (init=i)->SetParent(this);
     (step=s)->SetParent(this);
 }
 
-IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
+IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb)
+{
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
 }
 
 
-ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
+ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc)
+{
     Assert(e != NULL);
     (expr=e)->SetParent(this);
 }
 
-PrintStmt::PrintStmt(List<Expr*> *a) {
+PrintStmt::PrintStmt(List<Expr*> *a)
+{
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
 }

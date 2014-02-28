@@ -18,6 +18,7 @@
 
 class Decl;
 class VarDecl;
+class ClassDecl;
 class Expr;
 
 class Program : public Node
@@ -31,6 +32,7 @@ class Program : public Node
     public:
         Program(List<Decl*> *declList);
         void Check();
+        ClassDecl *GetClass(char *name);
 };
 
 class Stmt : public Node
