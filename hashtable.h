@@ -16,7 +16,7 @@
  * The same notation is used on the matching iterator for the table,
  * i.e. a Hashtable<char*> supports an Iterator<char*>.
  *
- * An iterator is provided for iterating over the entries in a table. 
+ * An iterator is provided for iterating over the entries in a table.
  * The iterator walks through the values, one by one, in alphabetical
  * order by the key. Sample iteration usage:
  *
@@ -37,8 +37,8 @@
 #include <string.h>
 
 struct ltstr {
-  bool operator()(const char* s1, const char* s2) const
-  { return strcmp(s1, s2) < 0; }
+    bool operator()(const char* s1, const char* s2) const
+    { return strcmp(s1, s2) < 0; }
 };
 
 
@@ -46,39 +46,39 @@ template <class Value> class Iterator;
 
 template<class Value> class Hashtable {
 
-  private: 
-     std::multimap<const char*, Value, ltstr> mmap;
- 
-   public:
-            // ctor creates a new empty hashtable
-     Hashtable() {}
+    private:
+        std::multimap<const char*, Value, ltstr> mmap;
 
-           // Returns number of entries currently in table
-     int NumEntries() const;
+    public:
+        // ctor creates a new empty hashtable
+        Hashtable() {}
 
-           // Associates value with key. If a previous entry for
-           // key exists, the bool parameter controls whether 
-           // new value overwrites the previous (removing it from
-           // from the table entirely) or just shadows it (keeps previous
-           // and adds additional entry). The lastmost entered one for an
-           // key will be the one returned by Lookup.
-     void Enter(const char *key, Value value,
-		    bool overwriteInsteadOfShadow = true);
+        // Returns number of entries currently in table
+        int NumEntries() const;
 
-           // Removes a given key->value pair.  Any other values
-           // for that key are not affected. If this is the last
-           // remaining value for that key, the key is removed
-           // entirely.
-     void Remove(const char *key, Value value);
+        // Associates value with key. If a previous entry for
+        // key exists, the bool parameter controls whether
+        // new value overwrites the previous (removing it from
+        // from the table entirely) or just shadows it (keeps previous
+        // and adds additional entry). The lastmost entered one for an
+        // key will be the one returned by Lookup.
+        void Enter(const char *key, Value value,
+                   bool overwriteInsteadOfShadow = true);
 
-          // Returns value stored under key or NULL if no match.
-          // If more than one value for key (ie shadow feature was
-          // used during Enter), returns the lastmost entered one.
-     Value Lookup(const char *key);
+        // Removes a given key->value pair.  Any other values
+        // for that key are not affected. If this is the last
+        // remaining value for that key, the key is removed
+        // entirely.
+        void Remove(const char *key, Value value);
 
-          // Returns an Iterator object (see below) that can be used to
-          // visit each value in the table in alphabetical order.
-     Iterator<Value> GetIterator();
+        // Returns value stored under key or NULL if no match.
+        // If more than one value for key (ie shadow feature was
+        // used during Enter), returns the lastmost entered one.
+        Value Lookup(const char *key);
+
+        // Returns an Iterator object (see below) that can be used to
+        // visit each value in the table in alphabetical order.
+        Iterator<Value> GetIterator();
 
 };
 
@@ -88,17 +88,17 @@ template<class Value> class Hashtable {
  * iterator.
  */
 template<class Value> class Iterator {
-  friend class Hashtable<Value>;
+    friend class Hashtable<Value>;
 
-  private:
+    private:
     typename std::multimap<const char*, Value , ltstr>::iterator cur, end;
     Iterator(std::multimap<const char*, Value, ltstr>& t)
-      : cur(t.begin()), end(t.end()) {}
+        : cur(t.begin()), end(t.end()) {}
 
-  public:
-         // Returns current value and advances iterator to next.
-         // Returns NULL when there are no more values in table
-         // Visits every value, even those that are shadowed.
+    public:
+    // Returns current value and advances iterator to next.
+    // Returns NULL when there are no more values in table
+    // Visits every value, even those that are shadowed.
     Value GetNextValue();
 };
 

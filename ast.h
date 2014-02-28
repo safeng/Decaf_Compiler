@@ -23,7 +23,6 @@
  * node classes. Your semantic analyzer should do an inorder walk on the
  * parse tree, and when visiting each node, verify the particular
  * semantic rules that apply to that construct.
-
  */
 
 #ifndef _H_ast
@@ -35,28 +34,28 @@
 
 class Node 
 {
-  protected:
-    yyltype *location;
-    Node *parent;
+    protected:
+        yyltype *location;
+        Node *parent;
 
-  public:
-    Node(yyltype loc);
-    Node();
-    
-    yyltype *GetLocation()   { return location; }
-    void SetParent(Node *p)  { parent = p; }
-    Node *GetParent()        { return parent; }
+    public:
+        Node(yyltype loc);
+        Node();
+
+        yyltype *GetLocation()   { return location; }
+        void SetParent(Node *p)  { parent = p; }
+        Node *GetParent()        { return parent; }
 };
-   
+
 
 class Identifier : public Node 
 {
-  protected:
-    char *name;
-    
-  public:
-    Identifier(yyltype loc, const char *name);
-    friend std::ostream& operator<<(std::ostream& out, Identifier *id) { return out << id->name; }
+    protected:
+        char *name;
+
+    public:
+        Identifier(yyltype loc, const char *name);
+        friend std::ostream& operator<<(std::ostream& out, Identifier *id) { return out << id->name; }
 };
 
 
@@ -67,8 +66,8 @@ class Identifier : public Node
 // when your parser can continue after an error.
 class Error : public Node
 {
-  public:
-    Error() : Node() {}
+    public:
+        Error() : Node() {}
 };
 
 
