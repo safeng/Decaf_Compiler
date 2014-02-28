@@ -36,6 +36,7 @@ class VarDecl : public Decl
 {
     protected:
         Type *type;
+        void DoCheck(void);
 
     public:
         VarDecl(Identifier *name, Type *type);

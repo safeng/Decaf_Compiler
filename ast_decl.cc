@@ -7,9 +7,12 @@
 #include "ast_stmt.h"
 #include "errors.h"
 
-Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
+Decl::Decl(Identifier *n) : Node(*n->GetLocation())
+{
     Assert(n != NULL);
     (id=n)->SetParent(this);
+
+    return;
 }
 
 Identifier *Decl::get_id(void)
@@ -23,15 +26,25 @@ std::ostream& operator<<(std::ostream& out, Decl *d)
 }
 
 
-VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
+VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
+{
     Assert(n != NULL && t != NULL);
     (type=t)->SetParent(this);
+
+    return;
+}
+
+void VarDecl::DoCheck(void)
+{
+    this->type->DoCheck(void);
+
+    return;
 }
 
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
-                     List<NamedType*> *imp, List<Decl*> *m)
-    : Decl(n)
+                     List<NamedType*> *imp, List<Decl*> *m) :
+    Decl(n)
 {
     // Extends can be NULL. Implements and members may be empty lists,
     // but not NULL.
