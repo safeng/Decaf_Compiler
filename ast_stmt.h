@@ -44,7 +44,7 @@ class Program : public Node
 class Stmt : public Node
 {
     public:
-        Stmt();
+        Stmt(void);
         Stmt(yyltype loc);
 };
 

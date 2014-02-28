@@ -5,6 +5,7 @@
 #include "ast_decl.h"
 #include "ast_type.h"
 #include "ast_stmt.h"
+#include "errors.h"
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -39,6 +40,7 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
+    sym_ = new Hashtable<Decl*>;
     for (int i = 0; i < m->NumElements(); i++) {
         Decl *newdec = m->Nth(i);
         char *id = newdec->get_id()->get_name();
@@ -58,6 +60,7 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 {
     Assert(n != NULL && m != NULL);
     (members = m)->SetParentAll(this);
+    sym_ = new Hashtable<Decl*>;
     for (int i = 0; i < m->NumElements(); i++) {
         Decl *newdec = m->Nth(i);
         char *id = newdec->get_id()->get_name();
@@ -79,6 +82,7 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n)
     (returnType = r)->SetParent(this);
     (formals = d)->SetParentAll(this);
     body = NULL;
+    sym_ = new Hashtable<Decl*>;
     for (int i = 0; i < d->NumElements(); i++) {
         Decl *newdec = d->Nth(i);
         char *id = newdec->get_id()->get_name();

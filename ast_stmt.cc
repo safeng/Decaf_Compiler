@@ -78,12 +78,12 @@ InterfaceDecl *Program::GetInterface(char *name)
     return olddec;
 }
 
-Stmt() : Node()
+Stmt::Stmt(void) : Node()
 {
     return;
 }
 
-Stmt(yyltype loc) : Node(loc)
+Stmt::Stmt(yyltype loc) : Node(loc)
 {
     return;
 }

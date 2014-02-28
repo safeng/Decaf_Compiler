@@ -44,7 +44,7 @@ class VarDecl : public Decl
 class ClassDecl : public Decl
 {
     private:
-        Hashtable<Node> *sym_;
+        Hashtable<Decl*> *sym_;
 
     protected:
         List<Decl*> *members;
@@ -59,7 +59,7 @@ class ClassDecl : public Decl
 class InterfaceDecl : public Decl
 {
     private:
-        Hashtable<Node> *sym_;
+        Hashtable<Decl*> *sym_;
 
     protected:
         List<Decl*> *members;
@@ -71,7 +71,7 @@ class InterfaceDecl : public Decl
 class FnDecl : public Decl
 {
     private:
-        Hashtable<Node> *sym_;
+        Hashtable<Decl*> *sym_;
 
     protected:
         List<VarDecl*> *formals;
