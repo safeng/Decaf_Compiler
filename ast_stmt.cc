@@ -78,6 +78,16 @@ InterfaceDecl *Program::GetInterface(char *name)
     return olddec;
 }
 
+Stmt() : Node()
+{
+    return;
+}
+
+Stmt(yyltype loc) : Node(loc)
+{
+    return;
+}
+
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
 {
     Assert(d != NULL && s != NULL);

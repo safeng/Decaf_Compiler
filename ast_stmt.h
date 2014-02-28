@@ -44,14 +44,8 @@ class Program : public Node
 class Stmt : public Node
 {
     public:
-        Stmt()
-            : Node()
-        {
-        }
-        Stmt(yyltype loc)
-            : Node(loc)
-        {
-        }
+        Stmt();
+        Stmt(yyltype loc);
 };
 
 class StmtBlock : public Stmt
