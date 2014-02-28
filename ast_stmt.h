@@ -27,7 +27,7 @@ class Expr;
 class Program : public Node
 {
     private:
-        Hashtable<Node*> *sym_;
+        Hashtable<Decl*> *sym_;
 
     protected:
         List<Decl*> *decls;
@@ -57,7 +57,7 @@ class Stmt : public Node
 class StmtBlock : public Stmt
 {
     private:
-        Hashtable<Node> *sym_;
+        Hashtable<Decl*> *sym_;
 
     protected:
         List<VarDecl*> *decls;

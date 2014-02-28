@@ -6,19 +6,19 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 #include "ast_expr.h"
-
+#include "errors.h"
 
 Program::Program(List<Decl*> *d)
 {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    this->sym_ = new Hashtable<Node*>();
+    this->sym_ = new Hashtable<Decl*>();
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
-        char *id = newdec->id->Name;
+        char *id = newdec->get_id()->get_name();
         Decl *olddec = this->sym_->Lookup(id);
         if (olddec == NULL) {
-            this->sym_->Enter(id, dec);
+            this->sym_->Enter(id, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
@@ -27,14 +27,14 @@ Program::Program(List<Decl*> *d)
 
 void Program::Check()
 {
-    for (int i = 0; i < decls->NumElements; i++) {
+    for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->Check();
     }
 }
 
 ClassDecl *Program::GetClass(char *name)
 {
-    Decl *dec = this.sym_->Lookup(name);
+    Decl *dec = this->sym_->Lookup(name);
     ClassDecl *olddec = dynamic_cast<ClassDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
@@ -45,7 +45,7 @@ ClassDecl *Program::GetClass(char *name)
 
 FnDecl *Program::GetFn(char *name)
 {
-    Decl *dec = this.sym_->Lookup(name);
+    Decl *dec = this->sym_->Lookup(name);
     FnDecl *olddec = dynamic_cast<FnDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
