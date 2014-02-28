@@ -32,19 +32,44 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
                      List<NamedType*> *imp, List<Decl*> *m)
     : Decl(n)
 {
-    // Extends can be NULL, Implements and may be empty lists but cannot be NULL
+    // Extends can be NULL. Implements and members may be empty lists,
+    // but not NULL.
     Assert(n != NULL && imp != NULL && m != NULL);
     extends = ex;
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
+    for (int i = 0; i < m->NumElements(); i++) {
+        Decl *newdec = m->Nth(i);
+        char *id = newdec->get_id()->get_name();
+        Decl *olddec = this->sym_->Lookup(id);
+        if (olddec == NULL) {
+            this->sym_->Enter(id, newdec);
+        } else {
+            ReportError::DeclConflict(newdec, olddec);
+        }
+    }
+
+    return;
 }
 
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 {
     Assert(n != NULL && m != NULL);
-    (members=m)->SetParentAll(this);
+    (members = m)->SetParentAll(this);
+    for (int i = 0; i < m->NumElements(); i++) {
+        Decl *newdec = m->Nth(i);
+        char *id = newdec->get_id()->get_name();
+        Decl *olddec = this->sym_->Lookup(id);
+        if (olddec == NULL) {
+            this->sym_->Enter(id, newdec);
+        } else {
+            ReportError::DeclConflict(newdec, olddec);
+        }
+    }
+
+    return;
 }
 
 
@@ -54,6 +79,16 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n)
     (returnType = r)->SetParent(this);
     (formals = d)->SetParentAll(this);
     body = NULL;
+    for (int i = 0; i < d->NumElements(); i++) {
+        Decl *newdec = d->Nth(i);
+        char *id = newdec->get_id()->get_name();
+        Decl *olddec = this->sym_->Lookup(id);
+        if (olddec == NULL) {
+            this->sym_->Enter(id, newdec);
+        } else {
+            ReportError::DeclConflict(newdec, olddec);
+        }
+    }
 
     return;
 }
