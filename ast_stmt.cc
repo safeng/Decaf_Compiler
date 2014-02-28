@@ -56,7 +56,7 @@ FnDecl *Program::GetFn(char *name)
 
 VarDecl *Program::GetVar(char *name)
 {
-    Decl *dec = this.sym_->Lookup(name);
+    Decl *dec = this->sym_->Lookup(name);
     VarDecl *olddec = dynamic_cast<VarDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
@@ -67,7 +67,7 @@ VarDecl *Program::GetVar(char *name)
 
 InterfaceDecl *Program::GetInterface(char *name)
 {
-    Decl *dec = this.sym_->Lookup(name);
+    Decl *dec = this->sym_->Lookup(name);
     InterfaceDecl *olddec = dynamic_cast<InterfaceDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
@@ -81,13 +81,13 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
-    this->sym_ = new Hashtable();
-    for (int i = 0; i < decls->NumElements; i++) {
+    this->sym_ = new Hashtable<Decl*>();
+    for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
-        char *id = sym_->id->Name;
+        char *id = newdec->get_id()->get_name();
         Decl *olddec = this->sym_->Lookup(id);
         if (olddec == NULL) {
-            this->sym_->Enter(id, dec);
+            this->sym_->Enter(id, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
