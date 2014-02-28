@@ -45,6 +45,8 @@ class Node
         Node *parent;
         bool checked_;
 
+        virtual void DoCheck(void);
+
     public:
         Node(yyltype loc);
         Node();

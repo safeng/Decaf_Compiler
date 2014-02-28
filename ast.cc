@@ -22,7 +22,10 @@ Node::Node() {
 
 void Node::Check(void)
 {
-    this->checked_ = true;
+    if (!this->checked_) {
+        this->DoCheck();
+        this->checked_ = true;
+    }
 
     return;
 }
