@@ -12,10 +12,10 @@ Program::Program(List<Decl*> *d)
 {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    this->sym_ = new Hashtable();
-    for (int i = 0; i < decls->NumElements; i++) {
+    this->sym_ = new Hashtable<Node*>();
+    for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
-        char *id = sym_->id->Name;
+        char *id = newdec->id->Name;
         Decl *olddec = this->sym_->Lookup(id);
         if (olddec == NULL) {
             this->sym_->Enter(id, dec);

@@ -15,6 +15,7 @@
 
 #include "list.h"
 #include "ast.h"
+#include "hashtable.h"
 
 class Decl;
 class FnDecl;
@@ -26,7 +27,7 @@ class Expr;
 class Program : public Node
 {
     private:
-        Hashtable<Node> *sym_;
+        Hashtable<Node*> *sym_;
 
     protected:
         List<Decl*> *decls;
