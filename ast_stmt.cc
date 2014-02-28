@@ -12,13 +12,13 @@ Program::Program(List<Decl*> *d)
 {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    this.sym_ = new Hashtable();
-    for (int i = 0; i < decls.NumElements; i++) {
-        Decl *newdec = decls.Nth(i);
+    this->sym_ = new Hashtable();
+    for (int i = 0; i < decls->NumElements; i++) {
+        Decl *newdec = decls->Nth(i);
         char *id = sym_->id->Name;
-        Decl *olddec = this.sym_->Lookup(id);
+        Decl *olddec = this->sym_->Lookup(id);
         if (olddec == NULL) {
-            this.sym_->Enter(id, dec);
+            this->sym_->Enter(id, dec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
@@ -27,13 +27,9 @@ Program::Program(List<Decl*> *d)
 
 void Program::Check()
 {
-    /* pp3: here is where the semantic analyzer is kicked off.
-     *      The general idea is perform a tree traversal of the
-     *      entire program, examining all constructs for compliance
-     *      with the semantic rules.  Each node can have its own way of
-     *      checking itself, which makes for a great use of inheritance
-     *      and polymorphism in the node classes.
-     */
+    for (int i = 0; i < decls->NumElements; i++) {
+        decls->Nth(i)->Check();
+    }
 }
 
 ClassDecl *Program::GetClass(char *name);
