@@ -56,18 +56,19 @@ class StmtBlock : public Stmt
     protected:
         List<VarDecl*> *decls;
         List<Stmt*> *stmts;
+        void DoCheck(void);
 
     public:
         StmtBlock(List<VarDecl*> *variableDeclarations,
                   List<Stmt*> *statements);
 };
 
-
 class ConditionalStmt : public Stmt
 {
     protected:
         Expr *test;
         Stmt *body;
+        void DoCheck(void);
 
     public:
         ConditionalStmt(Expr *testExpr, Stmt *body);
@@ -75,17 +76,18 @@ class ConditionalStmt : public Stmt
 
 class LoopStmt : public ConditionalStmt
 {
+    protected:
+        void DoCheck(void);
+
     public:
-        LoopStmt(Expr *testExpr, Stmt *body)
-            : ConditionalStmt(testExpr, body)
-        {
-        }
+        LoopStmt(Expr *testExpr, Stmt *body);
 };
 
 class ForStmt : public LoopStmt
 {
     protected:
         Expr *init, *step;
+        void DoCheck(void);
 
     public:
         ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
@@ -93,15 +95,18 @@ class ForStmt : public LoopStmt
 
 class WhileStmt : public LoopStmt
 {
+    protected:
+        void DoCheck(void);
+
     public:
-        WhileStmt(Expr *test, Stmt *body)
-            : LoopStmt(test, body)
-        {
-        }
+        WhileStmt(Expr *test, Stmt *body);
 };
 
 class IfStmt : public ConditionalStmt
 {
+    protected:
+        void DoCheck(void);
+
     protected:
         Stmt *elseBody;
 
@@ -112,14 +117,14 @@ class IfStmt : public ConditionalStmt
 class BreakStmt : public Stmt
 {
     public:
-        BreakStmt(yyltype loc)
-            : Stmt(loc)
-        {
-        }
+        BreakStmt(yyltype loc);
 };
 
 class ReturnStmt : public Stmt
 {
+    protected:
+        void DoCheck(void);
+
     protected:
         Expr *expr;
 
@@ -131,10 +136,10 @@ class PrintStmt : public Stmt
 {
     protected:
         List<Expr*> *args;
+        void DoCheck(void);
 
     public:
         PrintStmt(List<Expr*> *arguments);
 };
-
 
 #endif

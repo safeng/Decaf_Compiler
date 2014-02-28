@@ -104,6 +104,8 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
             ReportError::DeclConflict(newdec, olddec);
         }
     }
+
+    return;
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b)
@@ -113,11 +115,22 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b)
     (body=b)->SetParent(this);
 }
 
+LoopStmt::LoopStmt(Expr *testExpr, Stmt *body) :
+    ConditionalStmt(testExpr, body)
+{
+    return;
+}
+
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b)
 {
     Assert(i != NULL && t != NULL && s != NULL && b != NULL);
     (init=i)->SetParent(this);
     (step=s)->SetParent(this);
+}
+
+WhileStmt::WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body)
+{
+    return;
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb)
@@ -127,6 +140,10 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb)
     if (elseBody) elseBody->SetParent(this);
 }
 
+BreakStmt::BreakStmt(yyltype loc) : Stmt(loc)
+{
+    return;
+}
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc)
 {
