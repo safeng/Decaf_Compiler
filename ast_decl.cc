@@ -2,6 +2,7 @@
  * -----------------
  * Implementation of Decl node classes.
  */
+
 #include "ast_decl.h"
 #include "ast_type.h"
 #include "ast_stmt.h"
@@ -88,6 +89,15 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
     return;
 }
 
+void InterfaceDecl::DoCheck(void)
+{
+    for (int i = 0; i < this->members->NumElements(); i++) {
+        this->members->Nth(i)->DoCheck();
+    }
+
+    return;
+}
+
 
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n)
 {
@@ -123,8 +133,9 @@ void FnDecl::DoCheck(void)
     for (int i = 0; i < this->formals->NumElements(); i++) {
         this->formals->Nth(i)->DoCheck();
     }
-    this->body->DoCheck();
+    if (body != NULL) {
+        this->body->DoCheck();
+    }
 
     return;
 }
-

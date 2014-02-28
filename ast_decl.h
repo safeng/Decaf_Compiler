@@ -64,6 +64,7 @@ class InterfaceDecl : public Decl
 
     protected:
         List<Decl*> *members;
+        void DoCheck(void);
 
     public:
         InterfaceDecl(Identifier *name, List<Decl*> *members);
