@@ -116,3 +116,15 @@ void FnDecl::SetFunctionBody(Stmt *b)
 
     return;
 }
+
+void FnDecl::DoCheck(void)
+{
+    this->returnType->DoCheck();
+    for (int i = 0; i < this->formals->NumElements(); i++) {
+        this->formals->Nth(i)->DoCheck();
+    }
+    this->body->DoCheck();
+
+    return;
+}
+

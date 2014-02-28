@@ -78,6 +78,7 @@ class FnDecl : public Decl
         List<VarDecl*> *formals;
         Type *returnType;
         Stmt *body;
+        void DoCheck(void);
 
     public:
         FnDecl(Identifier *name, Type *returnType,
