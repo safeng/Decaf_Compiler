@@ -11,11 +11,20 @@
 Node::Node(yyltype loc) {
     location = new yyltype(loc);
     parent = NULL;
+    checked_ = false;
 }
 
 Node::Node() {
     location = NULL;
     parent = NULL;
+    checked_ = false;
+}
+
+void Node::Check(void)
+{
+    this->checked_ = true;
+
+    return;
 }
 
 ClassDecl *Node::GetClass(char *name)

@@ -43,6 +43,7 @@ class Node
     protected:
         yyltype *location;
         Node *parent;
+        bool checked_;
 
     public:
         Node(yyltype loc);
@@ -63,7 +64,7 @@ class Node
             return parent;
         }
 
-        virtual void Check();
+        void Check(void);
 
         ClassDecl *GetClass(char *name);
         FnDecl *GetFn(char *name);
