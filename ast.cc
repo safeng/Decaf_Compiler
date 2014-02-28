@@ -76,4 +76,16 @@ VarDecl *Node::GetVar(char *name)
 
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
+
+    return;
+}
+
+char *Identifier::get_name(void)
+{
+    return this->name;
+}
+
+std::ostream& operator<<(std::ostream& out, Identifier *id)
+{
+    return out << id->name;
 }

@@ -82,11 +82,9 @@ class Identifier : public Node
 
     public:
         Identifier(yyltype loc, const char *name);
+        char *get_name(void);
         friend std::ostream& operator<<(std::ostream& out,
-                                        Identifier *id)
-        {
-            return out << id->name;
-        }
+                                        Identifier *id);
 };
 
 
