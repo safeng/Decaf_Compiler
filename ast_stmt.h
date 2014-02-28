@@ -38,10 +38,12 @@ class Program : public Node
 class Stmt : public Node
 {
     public:
-        Stmt() : Node()
+        Stmt()
+            : Node()
         {
         }
-        Stmt(yyltype loc) : Node(loc)
+        Stmt(yyltype loc)
+            : Node(loc)
         {
         }
 };
@@ -89,7 +91,10 @@ class ForStmt : public LoopStmt
 class WhileStmt : public LoopStmt
 {
     public:
-        WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
+        WhileStmt(Expr *test, Stmt *body)
+            : LoopStmt(test, body)
+        {
+        }
 };
 
 class IfStmt : public ConditionalStmt
@@ -104,7 +109,10 @@ class IfStmt : public ConditionalStmt
 class BreakStmt : public Stmt
 {
     public:
-        BreakStmt(yyltype loc) : Stmt(loc) {}
+        BreakStmt(yyltype loc)
+            : Stmt(loc)
+        {
+        }
 };
 
 class ReturnStmt : public Stmt
