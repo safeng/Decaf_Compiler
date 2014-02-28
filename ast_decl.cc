@@ -51,12 +51,16 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n)
 {
     Assert(n != NULL && r!= NULL && d != NULL);
-    (returnType=r)->SetParent(this);
-    (formals=d)->SetParentAll(this);
+    (returnType = r)->SetParent(this);
+    (formals = d)->SetParentAll(this);
     body = NULL;
+
+    return;
 }
 
 void FnDecl::SetFunctionBody(Stmt *b)
 {
-    (body=b)->SetParent(this);
+    (body = b)->SetParent(this);
+
+    return;
 }
