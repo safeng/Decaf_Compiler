@@ -30,9 +30,10 @@
 #ifndef _H_ast
 #define _H_ast
 
-#include <stdlib.h>   // for NULL
-#include "location.h"
+#include <stdlib.h>
 #include <iostream>
+
+#include "location.h"
 
 class FnDecl;
 class VarDecl;
@@ -45,7 +46,7 @@ class Node
         Node *parent;
         bool checked_;
 
-        virtual void DoCheck(void);
+        virtual void DoCheck(void) = 0;
 
     public:
         Node(yyltype loc);
@@ -68,9 +69,9 @@ class Node
 
         void Check(void);
 
-        ClassDecl *GetClass(char *name);
-        FnDecl *GetFn(char *name);
-        VarDecl *GetVar(char *name);
+        virtual ClassDecl *GetClass(char *name);
+        virtual FnDecl *GetFn(char *name);
+        virtual VarDecl *GetVar(char *name);
 };
 
 

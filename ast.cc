@@ -20,6 +20,11 @@ Node::Node() {
     checked_ = false;
 }
 
+void Node::DoCheck(void)
+{
+    return;
+}
+
 void Node::Check(void)
 {
     if (!this->checked_) {
