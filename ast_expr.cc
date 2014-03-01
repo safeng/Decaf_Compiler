@@ -25,12 +25,12 @@ Expr::Expr() : Stmt()
 
 Type *type(void)
 {
-    return this->type_;
+    return type_;
 }
 
 void set_type(Type *t)
 {
-    this->type_ = t;
+    type_ = t;
 
     return;
 }
@@ -152,10 +152,10 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 void FieldAccess::DoCheck(void)
 {
     if (base == NULL) {
-        this->field->Check();
+        field->Check();
     } else {
-        this->base->Check();
-        this->field->Check(); // TODO: Need to check class sym_
+        base->Check();
+        field->Check(); // TODO: Need to check class sym_
     }
 
     return;
@@ -177,12 +177,12 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     if (base == NULL) {
-        this->field->Check();
+        field->Check();
     } else {
-        this->base->Check();
-        this->field->Check(); // TODO: Need to check class sym_
+        base->Check();
+        field->Check(); // TODO: Need to check class sym_
     }
-    this->actuals->Check();
+    actuals->Check();
 
     return;
 }
@@ -196,9 +196,9 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
 
 void NewArrayExpr::DoCheck(void)
 {
-    this->size->Check();
-    // TODO: Check the type of this->size
-    this->elemType->Check();
+    size->Check();
+    // TODO: Check the type of size
+    elemType->Check();
 
     return;
 }

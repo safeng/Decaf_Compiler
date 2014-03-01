@@ -12,13 +12,13 @@ Program::Program(List<Decl*> *d)
 {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    this->sym_ = new Hashtable<Decl*>();
+    sym_ = new Hashtable<Decl*>();
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
         char *id = newdec->get_id()->get_name();
-        Decl *olddec = this->sym_->Lookup(id);
+        Decl *olddec = sym_->Lookup(id);
         if (olddec == NULL) {
-            this->sym_->Enter(id, newdec);
+            sym_->Enter(id, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
@@ -36,7 +36,7 @@ void Program::DoCheck(void)
 
 ClassDecl *Program::GetClass(char *name)
 {
-    Decl *dec = this->sym_->Lookup(name);
+    Decl *dec = sym_->Lookup(name);
     ClassDecl *olddec = dynamic_cast<ClassDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
@@ -47,7 +47,7 @@ ClassDecl *Program::GetClass(char *name)
 
 FnDecl *Program::GetFn(char *name)
 {
-    Decl *dec = this->sym_->Lookup(name);
+    Decl *dec = sym_->Lookup(name);
     FnDecl *olddec = dynamic_cast<FnDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
@@ -58,7 +58,7 @@ FnDecl *Program::GetFn(char *name)
 
 VarDecl *Program::GetVar(char *name)
 {
-    Decl *dec = this->sym_->Lookup(name);
+    Decl *dec = sym_->Lookup(name);
     VarDecl *olddec = dynamic_cast<VarDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
@@ -69,7 +69,7 @@ VarDecl *Program::GetVar(char *name)
 
 InterfaceDecl *Program::GetInterface(char *name)
 {
-    Decl *dec = this->sym_->Lookup(name);
+    Decl *dec = sym_->Lookup(name);
     InterfaceDecl *olddec = dynamic_cast<InterfaceDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
@@ -93,13 +93,13 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
-    this->sym_ = new Hashtable<Decl*>();
+    sym_ = new Hashtable<Decl*>();
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
         char *id = newdec->get_id()->get_name();
-        Decl *olddec = this->sym_->Lookup(id);
+        Decl *olddec = sym_->Lookup(id);
         if (olddec == NULL) {
-            this->sym_->Enter(id, newdec);
+            sym_->Enter(id, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
@@ -110,11 +110,11 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
 
 void StmtBlock::DoCheck(void)
 {
-    for (int i = 0; i < this->decls->NumElements(); i++) {
-        this->decls->Nth(i)->Check();
+    for (int i = 0; i < decls->NumElements(); i++) {
+        decls->Nth(i)->Check();
     }
-    for (int i = 0; i < this->stmts->NumElements(); i++) {
-        this->stmts->Nth(i)->Check();
+    for (int i = 0; i < stmts->NumElements(); i++) {
+        stmts->Nth(i)->Check();
     }
 
     return;
@@ -129,8 +129,8 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b)
 
 void ConditionalStmt::DoCheck(void)
 {
-    this->test->Check();
-    this->body->Check();
+    test->Check();
+    body->Check();
 
     return;
 }
@@ -150,10 +150,10 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b)
 
 void ForStmt::DoCheck(void)
 {
-    this->init->Check();
-    this->test->Check();
-    this->step->Check();
-    this->body->Check();
+    init->Check();
+    test->Check();
+    step->Check();
+    body->Check();
 
     return;
 }
@@ -172,9 +172,9 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb)
 
 void IfStmt::DoCheck(void)
 {
-    this->test->Check();
-    this->body->Check();
-    this->elseBody->Check();
+    test->Check();
+    body->Check();
+    elseBody->Check();
 
     return;
 }
@@ -192,7 +192,7 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc)
 
 void ReturnStmt::DoCheck(void)
 {
-    this->expr->Check();
+    expr->Check();
 
     return;
 }
@@ -205,8 +205,8 @@ PrintStmt::PrintStmt(List<Expr*> *a)
 
 void PrintStmt::DoCheck(void)
 {
-    for (int i = 0; i < this->args->NumElements(); i++) {
-        this->args->Nth(i)->Check();
+    for (int i = 0; i < args->NumElements(); i++) {
+        args->Nth(i)->Check();
     }
 
     return;

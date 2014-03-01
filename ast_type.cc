@@ -58,7 +58,7 @@ bool Type::IsEquivalentTo(Type *other)
 
 void NamedType::DoCheck(void)
 {
-    this->GetClass(this->typeName);
+    GetClass(this->typeName);
 
     return;
 }

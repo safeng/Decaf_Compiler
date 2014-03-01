@@ -27,9 +27,9 @@ void Node::DoCheck(void)
 
 void Node::Check(void)
 {
-    if (!this->checked_) {
-        this->DoCheck();
-        this->checked_ = true;
+    if (!checked_) {
+        DoCheck();
+        checked_ = true;
     }
 
     return;
@@ -40,7 +40,7 @@ ClassDecl *Node::GetClass(char *name)
     ClassDecl *c;
 
     if (parent != NULL) {
-        c = this->parent->GetClass(name);
+        c = parent->GetClass(name);
     } else {
         c = NULL;
     }
@@ -53,7 +53,7 @@ FnDecl *Node::GetFn(char *name)
     FnDecl *f;
 
     if (parent != NULL) {
-        f = this->parent->GetFn(name);
+        f = parent->GetFn(name);
     } else {
         f = NULL;
     }
@@ -66,7 +66,7 @@ VarDecl *Node::GetVar(char *name)
     VarDecl *v;
 
     if (parent != NULL) {
-        v = this->parent->GetVar(name);
+        v = parent->GetVar(name);
     } else {
         v = NULL;
     }
@@ -82,7 +82,7 @@ Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
 
 char *Identifier::get_name(void)
 {
-    return this->name;
+    return name;
 }
 
 std::ostream& operator<<(std::ostream& out, Identifier *id)

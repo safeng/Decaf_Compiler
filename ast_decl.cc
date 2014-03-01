@@ -18,7 +18,7 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation())
 
 Identifier *Decl::get_id(void)
 {
-    return this->id;
+    return id;
 }
 
 std::ostream& operator<<(std::ostream& out, Decl *d)
@@ -37,7 +37,7 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
 
 void VarDecl::DoCheck(void)
 {
-    this->type->DoCheck(void);
+    type->DoCheck(void);
 
     return;
 }
@@ -58,9 +58,9 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
     for (int i = 0; i < m->NumElements(); i++) {
         Decl *newdec = m->Nth(i);
         char *id = newdec->get_id()->get_name();
-        Decl *olddec = this->sym_->Lookup(id);
+        Decl *olddec = sym_->Lookup(id);
         if (olddec == NULL) {
-            this->sym_->Enter(id, newdec);
+            sym_->Enter(id, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
@@ -71,14 +71,14 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
 
 void ClassDecl::DoCheck(void)
 {
-    if (this->extends != NULL) {
-        this->extends->Check();
+    if (extends != NULL) {
+        extends->Check();
     }
 
     // TODO: Check declaration conflict for extend
 
-    for (int i = 0; i < this->implements->NumElements(); i++) {
-        this->implements->Nth(i)->Check();
+    for (int i = 0; i < implements->NumElements(); i++) {
+        implements->Nth(i)->Check();
     }
 
     // TODO: Check declaration conflict for implements
@@ -97,9 +97,9 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
     for (int i = 0; i < m->NumElements(); i++) {
         Decl *newdec = m->Nth(i);
         char *id = newdec->get_id()->get_name();
-        Decl *olddec = this->sym_->Lookup(id);
+        Decl *olddec = sym_->Lookup(id);
         if (olddec == NULL) {
-            this->sym_->Enter(id, newdec);
+            sym_->Enter(id, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
@@ -110,8 +110,8 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 
 void InterfaceDecl::DoCheck(void)
 {
-    for (int i = 0; i < this->members->NumElements(); i++) {
-        this->members->Nth(i)->DoCheck();
+    for (int i = 0; i < members->NumElements(); i++) {
+        members->Nth(i)->DoCheck();
     }
 
     return;
@@ -128,9 +128,9 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n)
     for (int i = 0; i < d->NumElements(); i++) {
         Decl *newdec = d->Nth(i);
         char *id = newdec->get_id()->get_name();
-        Decl *olddec = this->sym_->Lookup(id);
+        Decl *olddec = sym_->Lookup(id);
         if (olddec == NULL) {
-            this->sym_->Enter(id, newdec);
+            sym_->Enter(id, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
@@ -148,12 +148,12 @@ void FnDecl::SetFunctionBody(Stmt *b)
 
 void FnDecl::DoCheck(void)
 {
-    this->returnType->DoCheck();
-    for (int i = 0; i < this->formals->NumElements(); i++) {
-        this->formals->Nth(i)->Check();
+    returnType->DoCheck();
+    for (int i = 0; i < formals->NumElements(); i++) {
+        formals->Nth(i)->Check();
     }
     if (body != NULL) {
-        this->body->Check();
+        body->Check();
     }
 
     return;
