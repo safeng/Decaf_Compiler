@@ -57,6 +57,7 @@ class ClassDecl : public Decl
         ClassDecl(Identifier *name, NamedType *extends,
                   List<NamedType*> *implements, List<Decl*> *members);
 
+        ClassDecl *GetCurrentClass(void);
         VarDecl *GetMemberVar(char *name);
         FnDecl *GetMemberFn(char *name);
 };

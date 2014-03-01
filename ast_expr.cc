@@ -132,6 +132,13 @@ ArithmeticExpr::ArithmeticExpr(Operator *op, Expr *rhs) :
 }
 
 
+void This::DoCheck(void)
+{
+    ClassDecl *t = GetCurrentClass();
+
+    return;
+}
+
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc)
 {
     (base=b)->SetParent(this);
@@ -164,19 +171,16 @@ void FieldAccess::DoCheck(void)
             type_ = v->get_type();
         }
     } else {
-        NamedType *t;
-        base->Check();
-        t = dynamic_cast<NamedType*>(base->type());
-        if (t == NULL) {
+        This *th = dynamic_cast<This*>(base);
+        if (th == NULL) {
+            base->Check();
             ReportError::InaccessibleField(field, base->type());
-        } else if (t != NULL) {
-            ClassDecl *c = GetClass(t);
-            VarDecl *v;
-            c->Check();
-            v = c->GetMemberVar(field->get_name());
+        } else {
+            ClassDecl *c = GetCurrentClass();
+            NamedType *t = new NamedType(c->get_id());
+            VarDecl *v = c->GetMemberVar(field->get_name());
             if (v == NULL) {
-                ReportError::IdentifierNotDeclared
-                    (field, LookingForVariable);
+                ReportError::FieldNotFoundInBase(field, t);
             } else {
                 type_ = v->get_type();
             }

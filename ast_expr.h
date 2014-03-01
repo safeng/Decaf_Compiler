@@ -150,6 +150,9 @@ class LValue : public Expr
 
 class This : public Expr
 {
+    protected:
+        void DoCheck(void);
+
     public:
         This(yyltype loc) : Expr(loc) {}
 };

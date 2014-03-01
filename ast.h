@@ -71,6 +71,7 @@ class Node
         virtual void Check(void);
 
         virtual ClassDecl *GetClass(NamedType *t);
+        virtual ClassDecl *GetCurrentClass();
         virtual FnDecl *GetFn(char *name);
         virtual VarDecl *GetVar(char *name);
 };

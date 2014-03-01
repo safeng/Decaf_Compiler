@@ -48,6 +48,19 @@ ClassDecl *Node::GetClass(NamedType *t)
     return c;
 }
 
+ClassDecl *Node::GetCurrentClass()
+{
+    ClassDecl *c;
+
+    if (parent != NULL) {
+        c = parent->GetCurrentClass();
+    } else {
+        c = NULL;
+    }
+
+    return c;
+}
+
 FnDecl *Node::GetFn(char *name)
 {
     FnDecl *f;

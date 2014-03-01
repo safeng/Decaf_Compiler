@@ -90,6 +90,11 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
     return;
 }
 
+ClassDecl *ClassDecl::GetCurrentClass(void)
+{
+    return this;
+}
+
 VarDecl *ClassDecl::GetMemberVar(char *name)
 {
     return dynamic_cast<VarDecl*>(sym_->Lookup(name));
