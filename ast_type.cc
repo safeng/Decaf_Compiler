@@ -7,6 +7,7 @@
 
 #include "ast_type.h"
 #include "ast_decl.h"
+#include "errors.h"
 
 /* Class constants
  * ---------------
@@ -58,7 +59,9 @@ bool Type::IsEquivalentTo(Type *other)
 
 void NamedType::DoCheck(void)
 {
-    GetClass(this->typeName);
+    if (GetClass(typeName) == NULL) {
+        ReportError::IdentifierNotDeclared(id);
+    }
 
     return;
 }
