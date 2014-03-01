@@ -63,9 +63,6 @@ void ClassDecl::DoCheck(void)
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-
-    // TODO: Check declaration conflict for extend
-
     for (int i = 0; i < implements->NumElements(); i++) {
         implements->Nth(i)->Check();
     }
