@@ -58,6 +58,7 @@ class StmtBlock : public Stmt
         List<VarDecl*> *decls;
         List<Stmt*> *stmts;
         void DoCheck(void);
+        VarDecl *GetVar(char *name);
 
     public:
         StmtBlock(List<VarDecl*> *variableDeclarations,

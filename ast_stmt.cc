@@ -120,6 +120,20 @@ void StmtBlock::DoCheck(void)
     return;
 }
 
+VarDecl *StmtBlock::GetVar(char *name)
+{
+    Decl *dec = sym_->Lookup(name);
+    VarDecl *olddec = dynamic_cast<VarDecl*>(dec);
+    if (olddec != NULL) {
+        olddec->Check();
+    } else {
+        olddec = parent->GetVar(name);
+    }
+
+    return olddec;
+}
+
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b)
 {
     Assert(t != NULL && b != NULL);
