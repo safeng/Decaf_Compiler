@@ -37,7 +37,7 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
 
 void VarDecl::DoCheck(void)
 {
-    type->DoCheck(void);
+    type->Check(void);
 
     return;
 }
@@ -111,7 +111,7 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 void InterfaceDecl::DoCheck(void)
 {
     for (int i = 0; i < members->NumElements(); i++) {
-        members->Nth(i)->DoCheck();
+        members->Nth(i)->Check();
     }
 
     return;
@@ -148,7 +148,7 @@ void FnDecl::SetFunctionBody(Stmt *b)
 
 void FnDecl::DoCheck(void)
 {
-    returnType->DoCheck();
+    returnType->Check();
     for (int i = 0; i < formals->NumElements(); i++) {
         formals->Nth(i)->Check();
     }
