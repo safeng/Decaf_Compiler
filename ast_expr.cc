@@ -151,6 +151,12 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 void FieldAccess::DoCheck(void)
 {
+    if (base == NULL) {
+        this->field->Check();
+    } else {
+        this->base->Check();
+        this->field->Check(); // TODO: Need to check class sym_
+    }
 
     return;
 }
@@ -170,6 +176,13 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 
 void Call::DoCheck(void)
 {
+    if (base == NULL) {
+        this->field->Check();
+    } else {
+        this->base->Check();
+        this->field->Check(); // TODO: Need to check class sym_
+    }
+    this->actuals->Check();
 
     return;
 }
