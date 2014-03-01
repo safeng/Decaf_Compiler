@@ -293,7 +293,10 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc)
 
 void NewExpr::DoCheck(void)
 {
-    cType->Check();
+    if (GetClass(cType) == NULL) {
+        ReportError::IdentifierNotDeclared(cType->get_id(),
+                                           LookingForClass);
+    }
 
     return;
 }
