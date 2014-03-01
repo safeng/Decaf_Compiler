@@ -71,7 +71,7 @@ void ClassDecl::DoCheck(void)
         if (intd == NULL) {
             ReportError::IdentifierNotDeclared(implements->Nth(i)->get_id(), LookingForInterface);
         } else {
-            Hashtable<Decl*> *sym_impl = itd->sym_;
+            Hashtable<Decl*> *sym_impl = intd->sym_;
             Iterator<Decl*> iter = sym_impl->GetIterator();	
             Decl* decl = NULL;
             while((decl = iter.GetNextValue()))
