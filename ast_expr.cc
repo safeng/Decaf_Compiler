@@ -224,19 +224,34 @@ void Call::DoCheck(void)
             type_ = f->get_return_type();
         }
     } else {
+        This *th = dynamic_cast<This*>(base);
         NamedType *t;
-        base->Check();
-        t = dynamic_cast<NamedType*>(base->type());
-        if (t == NULL) {
-            ReportError::InaccessibleField(field, base->type());
+        if (th == NULL) {
+            Type *t;
+            NamedType *nt;
+            base->Check();
+            t = base->type();
+            nt = dynamic_cast<NamedType*>(t);
+            if (nt == NULL) {
+                ReportError::FieldNotFoundInBase(field, t);
+            } else {
+                ClassDecl *c = GetClass(nt);
+                FnDecl *f;
+                c->Check();
+                f = c->GetMemberFn(field->get_name());
+                if (f == NULL) {
+                    ReportError::FieldNotFoundInBase
+                        (field, base->type());
+                } else {
+                    type_ = f->get_return_type();
+                }
+            }
         } else {
-            ClassDecl *c = GetClass(t);
-            FnDecl *f;
-            c->Check();
-            f = c->GetMemberFn(field->get_name());
+            ClassDecl *c = GetCurrentClass();
+            NamedType *t = new NamedType(c->get_id());
+            FnDecl *f = c->GetMemberFn(field->get_name());
             if (f == NULL) {
-                ReportError::IdentifierNotDeclared
-                    (field, LookingForFunction);
+                ReportError::FieldNotFoundInBase(field, t);
             } else {
                 type_ = f->get_return_type();
             }
