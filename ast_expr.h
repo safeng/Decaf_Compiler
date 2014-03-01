@@ -162,6 +162,7 @@ class ArrayAccess : public LValue
 {
     protected:
         Expr *base, *subscript;
+        void DoCheck(void);
 
     public:
         ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
