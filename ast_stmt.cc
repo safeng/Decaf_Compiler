@@ -188,7 +188,9 @@ void IfStmt::DoCheck(void)
 {
     test->Check();
     body->Check();
-    elseBody->Check();
+    if (elseBody != NULL) {
+        elseBody->Check();
+    }
 
     return;
 }
