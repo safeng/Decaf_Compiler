@@ -92,7 +92,8 @@ class Operator : public Node
 
     public:
         Operator(yyltype loc, const char *tok);
-        friend std::ostream& operator<<(std::ostream& out, Operator *o) { return out << o->tokenString; }
+        friend std::ostream& operator<<(std::ostream& out,
+                                        Operator *o);
 };
 
 class CompoundExpr : public Expr
@@ -102,8 +103,8 @@ class CompoundExpr : public Expr
         Expr *left, *right; // left will be NULL if unary
 
     public:
-        CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
-        CompoundExpr(Operator *op, Expr *rhs);             // for unary
+        CompoundExpr(Expr *lhs, Operator *op, Expr *rhs);
+        CompoundExpr(Operator *op, Expr *rhs);
 };
 
 class ArithmeticExpr : public CompoundExpr
@@ -167,35 +168,38 @@ class ArrayAccess : public LValue
  * know for sure whether there is an implicit "this." in
  * front until later on, so we use one node type for either
  * and sort it out later. */
-class FieldAccess : public LValue 
+class FieldAccess : public LValue
 {
     protected:
-        Expr *base;	// will be NULL if no explicit base
+        Expr *base; // will be NULL if no explicit base
         Identifier *field;
 
     public:
-        FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
+        FieldAccess(Expr *base, Identifier *field); //NULL base is OK
 };
 
 /* Like field access, call is used both for qualified base.field()
  * and unqualified field().  We won't figure out until later
  * whether we need implicit "this." so we use one node type for either
  * and sort it out later. */
-class Call : public Expr 
+class Call : public Expr
 {
     protected:
-        Expr *base;	// will be NULL if no explicit base
+        Expr *base; // will be NULL if no explicit base
         Identifier *field;
         List<Expr*> *actuals;
+        void DoCheck(void);
 
     public:
-        Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
+        Call(yyltype loc, Expr *base, Identifier *field,
+             List<Expr*> *args);
 };
 
 class NewExpr : public Expr
 {
     protected:
         NamedType *cType;
+        void DoCheck(void);
 
     public:
         NewExpr(yyltype loc, NamedType *clsType);
@@ -206,6 +210,7 @@ class NewArrayExpr : public Expr
     protected:
         Expr *size;
         Type *elemType;
+        void DoCheck(void);
 
     public:
         NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
@@ -214,14 +219,13 @@ class NewArrayExpr : public Expr
 class ReadIntegerExpr : public Expr
 {
     public:
-        ReadIntegerExpr(yyltype loc) : Expr(loc) {}
+        ReadIntegerExpr(yyltype loc);
 };
 
 class ReadLineExpr : public Expr
 {
     public:
-        ReadLineExpr(yyltype loc) : Expr (loc) {}
+        ReadLineExpr(yyltype loc);
 };
-
 
 #endif

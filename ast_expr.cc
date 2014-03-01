@@ -81,60 +81,136 @@ NullConstant(yyltype loc) : Expr(loc)
     return;
 }
 
-Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
+
+Operator::Operator(yyltype loc, const char *tok) : Node(loc)
+{
     Assert(tok != NULL);
     strncpy(tokenString, tok, sizeof(tokenString));
-}
-CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
-  : Expr(Join(l->GetLocation(), r->GetLocation())) {
-    Assert(l != NULL && o != NULL && r != NULL);
-    (op=o)->SetParent(this);
-    (left=l)->SetParent(this); 
-    (right=r)->SetParent(this);
+
+    return;
 }
 
-CompoundExpr::CompoundExpr(Operator *o, Expr *r) 
-  : Expr(Join(o->GetLocation(), r->GetLocation())) {
+std::ostream& operator<<(std::ostream& out, Operator *o)
+{
+    return out << o->tokenString;
+}
+
+
+CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r) :
+    Expr(Join(l->GetLocation(), r->GetLocation()))
+{
+    Assert(l != NULL && o != NULL && r != NULL);
+    (op=o)->SetParent(this);
+    (left=l)->SetParent(this);
+    (right=r)->SetParent(this);
+
+    return;
+}
+
+CompoundExpr::CompoundExpr(Operator *o, Expr *r) :
+    Expr(Join(o->GetLocation(), r->GetLocation()))
+{
     Assert(o != NULL && r != NULL);
-    left = NULL; 
+    left = NULL;
     (op=o)->SetParent(this);
     (right=r)->SetParent(this);
+
+    return;
 }
-   
-  
-ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
-    (base=b)->SetParent(this); 
+
+
+ArithmeticExpr::ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) :
+    CompoundExpr(lhs,op,rhs)
+{
+    return;
+}
+
+ArithmeticExpr::ArithmeticExpr(Operator *op, Expr *rhs) :
+    CompoundExpr(op,rhs)
+{
+    return;
+}
+
+
+ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc)
+{
+    (base=b)->SetParent(this);
     (subscript=s)->SetParent(this);
 }
-     
-FieldAccess::FieldAccess(Expr *b, Identifier *f) 
-  : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
-    Assert(f != NULL); // b can be be NULL (just means no explicit base)
-    base = b; 
-    if (base) base->SetParent(this); 
+
+
+FieldAccess::FieldAccess(Expr *b, Identifier *f)
+    : LValue((b != NULL) ? Join(b->GetLocation(), f->GetLocation())
+             : *f->GetLocation())
+{
+    Assert(f != NULL); // b can be be NULL
+    base = b;
+    if (base) base->SetParent(this);
     (field=f)->SetParent(this);
 }
 
+void FieldAccess::DoCheck(void)
+{
 
-Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
-    Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
+    return;
+}
+
+
+Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
+    Expr(loc)
+{
+    Assert(f != NULL && a != NULL);
     base = b;
     if (base) base->SetParent(this);
     (field=f)->SetParent(this);
     (actuals=a)->SetParentAll(this);
-}
- 
 
-NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
-  Assert(c != NULL);
-  (cType=c)->SetParent(this);
+    return;
 }
 
+void Call::DoCheck(void)
+{
 
-NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
+    return;
+}
+
+
+NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
+    Assert(c != NULL);
+    (cType=c)->SetParent(this);
+}
+
+
+void NewArrayExpr::DoCheck(void)
+{
+    this->size->Check();
+    // TODO: Check the type of this->size
+    this->elemType->Check();
+
+    return;
+}
+
+NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc)
+{
     Assert(sz != NULL && et != NULL);
-    (size=sz)->SetParent(this); 
+    (size=sz)->SetParent(this);
     (elemType=et)->SetParent(this);
+
+    return;
 }
 
-       
+
+ReadIntegerExpr::ReadIntegerExpr(yyltype loc) : Expr(loc)
+{
+    type_ = Type::intType;
+
+    return;
+}
+
+
+ReadLineExpr::ReadLineExpr(yyltype loc) : Expr (loc)
+{
+    type_ = Type::stringType;
+
+    return;
+}
