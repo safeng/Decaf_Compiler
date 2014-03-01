@@ -146,7 +146,7 @@ void This::DoCheck(void)
 {
     ClassDecl *c = GetCurrentClass();
     if (c == NULL) {
-        ThisOutsideClassScope(this);
+        ReportError::ThisOutsideClassScope(this);
     } else {
         NamedType *t = new NamedType(c->get_id());
         type_ = t;
