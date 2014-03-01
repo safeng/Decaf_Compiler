@@ -63,7 +63,7 @@ ClassDecl *Node::GetCurrentClass()
 
 InterfaceDecl *Node::GetInterface(NamedType *t)
 {
-    return;
+    return NULL;
 }
 
 FnDecl *Node::GetFn(char *name)

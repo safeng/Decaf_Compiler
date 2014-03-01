@@ -38,6 +38,7 @@
 class FnDecl;
 class VarDecl;
 class ClassDecl;
+class InterfaceDecl;
 class NamedType;
 
 class Node
@@ -72,7 +73,7 @@ class Node
 
         virtual ClassDecl *GetClass(NamedType *t);
         virtual ClassDecl *GetCurrentClass();
-        virtual InterfaceDecl *GetInterface(NamedType *t)
+        virtual InterfaceDecl *GetInterface(NamedType *t);
         virtual FnDecl *GetFn(char *name);
         virtual VarDecl *GetVar(char *name);
 };
