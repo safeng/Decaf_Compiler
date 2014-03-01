@@ -240,7 +240,6 @@ void Call::DoCheck(void)
         }
     } else {
         This *th = dynamic_cast<This*>(base);
-        NamedType *t;
         if (th == NULL) {
             Type *t;
             NamedType *nt;
@@ -248,17 +247,21 @@ void Call::DoCheck(void)
             t = base->type();
             nt = dynamic_cast<NamedType*>(t);
             if (nt == NULL) {
-                ReportError::FieldNotFoundInBase(field, t);
+                if (t != NULL) {
+                    ReportError::FieldNotFoundInBase(field, t);
+                }
             } else {
                 ClassDecl *c = GetClass(nt);
                 FnDecl *f;
-                c->Check();
-                f = c->GetMemberFn(field->get_name());
-                if (f == NULL) {
-                    ReportError::FieldNotFoundInBase
-                        (field, base->type());
-                } else {
-                    type_ = f->get_return_type();
+                if (c != NULL) {
+                    c->Check();
+                    f = c->GetMemberFn(field->get_name());
+                    if (f == NULL) {
+                        ReportError::FieldNotFoundInBase
+                            (field, base->type());
+                    } else {
+                        type_ = f->get_return_type();
+                    }
                 }
             }
         } else {
