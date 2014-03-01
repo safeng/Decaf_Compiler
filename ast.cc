@@ -35,12 +35,12 @@ void Node::Check(void)
     return;
 }
 
-ClassDecl *Node::GetClass(char *name)
+ClassDecl *Node::GetClass(NamedType *t)
 {
     ClassDecl *c;
 
     if (parent != NULL) {
-        c = parent->GetClass(name);
+        c = parent->GetClass(t);
     } else {
         c = NULL;
     }

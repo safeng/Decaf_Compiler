@@ -59,7 +59,7 @@ bool Type::IsEquivalentTo(Type *other)
 
 void NamedType::DoCheck(void)
 {
-    if (GetClass(typeName) == NULL) {
+    if (GetClass(this) == NULL) {
         ReportError::IdentifierNotDeclared(id, LookingForType);
     }
 

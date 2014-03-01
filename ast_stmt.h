@@ -22,6 +22,7 @@ class FnDecl;
 class VarDecl;
 class ClassDecl;
 class InterfaceDecl;
+class NamedType;
 class Expr;
 
 class Program : public Node
@@ -35,7 +36,7 @@ class Program : public Node
 
     public:
         Program(List<Decl*> *declList);
-        ClassDecl *GetClass(char *name);
+        ClassDecl *GetClass(NamedType *t);
         FnDecl *GetFn(char *name);
         VarDecl *GetVar(char *name);
         InterfaceDecl *GetInterface(char *name);

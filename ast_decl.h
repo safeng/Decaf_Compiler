@@ -45,9 +45,6 @@ class VarDecl : public Decl
 
 class ClassDecl : public Decl
 {
-    private:
-        Hashtable<Decl*> *sym_;
-
     protected:
         List<Decl*> *members;
         NamedType *extends;
@@ -55,8 +52,11 @@ class ClassDecl : public Decl
         void DoCheck(void);
 
     public:
+        Hashtable<Decl*> *sym_;
+
         ClassDecl(Identifier *name, NamedType *extends,
                   List<NamedType*> *implements, List<Decl*> *members);
+
         VarDecl *GetMemberVar(char *name);
         FnDecl *GetMemberFn(char *name);
 };

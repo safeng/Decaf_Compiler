@@ -49,6 +49,10 @@ Type *VarDecl::get_type(void)
 
 void ClassDecl::DoCheck(void)
 {
+    if (extends != NULL) {
+        extends->Check();
+        *sym_ = *GetClass(extends)->sym_;
+    }
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *newdec = members->Nth(i);
         char *id = newdec->get_id()->get_name();
@@ -58,9 +62,6 @@ void ClassDecl::DoCheck(void)
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
-    }
-    if (extends != NULL) {
-        extends->Check();
     }
 
     // TODO: Check declaration conflict for extend

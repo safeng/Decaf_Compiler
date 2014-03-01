@@ -38,6 +38,7 @@
 class FnDecl;
 class VarDecl;
 class ClassDecl;
+class NamedType;
 
 class Node
 {
@@ -69,7 +70,7 @@ class Node
 
         virtual void Check(void);
 
-        virtual ClassDecl *GetClass(char *name);
+        virtual ClassDecl *GetClass(NamedType *t);
         virtual FnDecl *GetFn(char *name);
         virtual VarDecl *GetVar(char *name);
 };

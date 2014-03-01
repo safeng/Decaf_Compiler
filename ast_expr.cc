@@ -170,7 +170,7 @@ void FieldAccess::DoCheck(void)
         if (t == NULL) {
             ReportError::InaccessibleField(field, base->type());
         } else if (t != NULL) {
-            ClassDecl *c = GetClass(t->get_id()->get_name());
+            ClassDecl *c = GetClass(t);
             VarDecl *v;
             c->Check();
             v = c->GetMemberVar(field->get_name());
@@ -216,7 +216,7 @@ void Call::DoCheck(void)
         if (t == NULL) {
             ReportError::InaccessibleField(field, base->type());
         } else if (t != NULL) {
-            ClassDecl *c = GetClass(t->get_id()->get_name());
+            ClassDecl *c = GetClass(t);
             FnDecl *f;
             c->Check();
             f = c->GetMemberFn(field->get_name());

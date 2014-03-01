@@ -34,9 +34,9 @@ void Program::DoCheck(void)
     return;
 }
 
-ClassDecl *Program::GetClass(char *name)
+ClassDecl *Program::GetClass(NamedType *t)
 {
-    Decl *dec = sym_->Lookup(name);
+    Decl *dec = sym_->Lookup(t->get_id()->get_name());
     ClassDecl *olddec = dynamic_cast<ClassDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();
