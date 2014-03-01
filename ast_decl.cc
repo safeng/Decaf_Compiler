@@ -37,7 +37,7 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
 
 void VarDecl::DoCheck(void)
 {
-    type->Check(void);
+    type->Check();
 
     return;
 }

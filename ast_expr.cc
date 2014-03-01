@@ -16,19 +16,19 @@ Expr::Expr(yyltype loc) : Stmt(loc)
     return;
 }
 
-Expr::Expr() : Stmt()
+Expr::Expr(void) : Stmt()
 {
     type_ = NULL;
 
     return;
 }
 
-Type *type(void)
+Type *Expr::type(void)
 {
     return type_;
 }
 
-void set_type(Type *t)
+void Expr::set_type(Type *t)
 {
     type_ = t;
 
@@ -74,7 +74,7 @@ StringConstant::StringConstant(yyltype loc, const char *val) :
 }
 
 
-NullConstant(yyltype loc) : Expr(loc)
+NullConstant::NullConstant(yyltype loc) : Expr(loc)
 {
     type_ = Type::nullType;
 
@@ -182,7 +182,9 @@ void Call::DoCheck(void)
         base->Check();
         field->Check(); // TODO: Need to check class sym_
     }
-    actuals->Check();
+    for (int i = 0; i < actuals->NumElements(); i++) {
+        actuals->Nth(i)->Check();
+    }
 
     return;
 }

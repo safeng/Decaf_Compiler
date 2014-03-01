@@ -28,7 +28,7 @@ class Expr : public Stmt
 
     public:
         Expr(yyltype loc);
-        Expr();
+        Expr(void);
         Type *type(void);
         void set_type(Type *t);
 };
@@ -110,8 +110,8 @@ class CompoundExpr : public Expr
 class ArithmeticExpr : public CompoundExpr
 {
     public:
-        ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
-        ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
+        ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs);
+        ArithmeticExpr(Operator *op, Expr *rhs);
 };
 
 class RelationalExpr : public CompoundExpr
@@ -173,6 +173,7 @@ class FieldAccess : public LValue
     protected:
         Expr *base; // will be NULL if no explicit base
         Identifier *field;
+        void DoCheck(void);
 
     public:
         FieldAccess(Expr *base, Identifier *field); //NULL base is OK
