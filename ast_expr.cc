@@ -202,12 +202,12 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     if (base == NULL) {
-        VarDecl *v = GetVar(field->get_name());
-        if (v == NULL) {
+        VarDecl *f = GetFn(field->get_name());
+        if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
-                                               LookingForVariable);
+                                               LookingForFunction);
         } else {
-            type_ = v->get_type();
+            type_ = f->get_return_type();
         }
     } else {
         NamedType *t;
