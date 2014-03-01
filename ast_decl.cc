@@ -63,28 +63,30 @@ void ClassDecl::DoCheck(void)
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-    for (int i = 0; i < implements->NumElements(); i++) {
-        implements->Nth(i)->Check();
-    }
 
     // TODO: Do implementation completion check
     for (int i = 0; i < implements->NumElements(); i++)
-	{
-		Hashtable<Decl*> *sym_impl = parent->GetInterface(implements->Nth(i))->sym_;
-		Iterator<Decl*> iter = sym_impl->GetIterator();	
-		Decl* decl = NULL;
-		while((decl = iter.GetNextValue()))
-		{
-			Decl * extDecl = sym_->Lookup(decl->get_id()->get_name());
-			if(extDecl == NULL)
-			{
-				ReportError::InterfaceNotImplemented(this, implements->Nth(i));	
-				break;
-			}else
-			{
-				// TODO: type checking
-			}
-		}
+    {
+        InterfaceDecl *intd = parent->GetInterface(implements->Nth(i));
+        if (intd == NULL) {
+            ReportError::IdentifierNotDeclared(implements->Nth(i)->get_id(), LookingForInterface);
+        } else {
+            Hashtable<Decl*> *sym_impl = itd->sym_;
+            Iterator<Decl*> iter = sym_impl->GetIterator();	
+            Decl* decl = NULL;
+            while((decl = iter.GetNextValue()))
+            {
+                Decl * extDecl = sym_->Lookup(decl->get_id()->get_name());
+                if(extDecl == NULL)
+                {
+                    ReportError::InterfaceNotImplemented(this, implements->Nth(i));	
+                    break;
+                }else
+                {
+                    // TODO: type checking
+                }
+            }
+        }
     }
     return;
 }

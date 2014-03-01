@@ -149,6 +149,15 @@ void This::DoCheck(void)
     return;
 }
 
+
+void ArrayAccess::DoCheck(void)
+{
+    base->Check();
+    subscript->Check();
+
+    return;
+}
+
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc)
 {
     (base=b)->SetParent(this);
