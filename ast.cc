@@ -61,6 +61,11 @@ ClassDecl *Node::GetCurrentClass()
     return c;
 }
 
+InterfaceDecl *Node::GetInterface(NamedType *t)
+{
+    return;
+}
+
 FnDecl *Node::GetFn(char *name)
 {
     FnDecl *f;
