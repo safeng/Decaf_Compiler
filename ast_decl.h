@@ -40,6 +40,7 @@ class VarDecl : public Decl
 
     public:
         VarDecl(Identifier *name, Type *type);
+        Type *get_type(void);
 };
 
 class ClassDecl : public Decl

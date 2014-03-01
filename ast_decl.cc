@@ -42,6 +42,10 @@ void VarDecl::DoCheck(void)
     return;
 }
 
+Type *VarDecl::get_type(void)
+{
+    return type;
+}
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
                      List<NamedType*> *imp, List<Decl*> *m) :

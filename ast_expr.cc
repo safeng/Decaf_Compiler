@@ -152,7 +152,13 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 void FieldAccess::DoCheck(void)
 {
     if (base == NULL) {
-        field->Check();
+        VarDecl *v = GetVar(field->get_name());
+        if (v == NULL) {
+            ReportError::IdentifierNotDeclared(field,
+                                               LookingForVariable);
+        } else {
+            type_ = v->get_type();
+        }
     } else {
         base->Check();
         field->Check(); // TODO: Need to check class sym_
