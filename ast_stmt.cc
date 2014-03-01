@@ -67,9 +67,10 @@ VarDecl *Program::GetVar(char *name)
     return olddec;
 }
 
-InterfaceDecl *Program::GetInterface(char *name)
+InterfaceDecl *Program::GetInterface(NamedType *t)
 {
-    Decl *dec = sym_->Lookup(name);
+    char *str = t->get_id()->get_name();
+    Decl *dec = sym_->Lookup(str);
     InterfaceDecl *olddec = dynamic_cast<InterfaceDecl*>(dec);
     if (olddec != NULL) {
         olddec->Check();

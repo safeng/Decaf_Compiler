@@ -39,7 +39,7 @@ class Program : public Node
         ClassDecl *GetClass(NamedType *t);
         FnDecl *GetFn(char *name);
         VarDecl *GetVar(char *name);
-        InterfaceDecl *GetInterface(char *name);
+        InterfaceDecl *GetInterface(NamedType *t);
 };
 
 class Stmt : public Node
