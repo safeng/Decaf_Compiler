@@ -202,7 +202,7 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     if (base == NULL) {
-        VarDecl *f = GetFn(field->get_name());
+        FnDecl *f = GetFn(field->get_name());
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForFunction);
