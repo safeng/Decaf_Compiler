@@ -99,7 +99,7 @@ void yyerror(const char *msg); // standard error-handling routine
  */
 Program   :    DeclList            { 
                                       @1; 
-                                      Program *program = new Program($1);
+                                      Node *program = new Program($1);
                                       // if no errors, advance to next phase
                                       if (ReportError::NumErrors() == 0) 
                                           program->Check();

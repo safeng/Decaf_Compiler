@@ -68,7 +68,7 @@ class Node
             return parent;
         }
 
-        virtual void Check(void);
+        void Check(void);
 
         virtual ClassDecl *GetClass(NamedType *t);
         virtual ClassDecl *GetCurrentClass();
