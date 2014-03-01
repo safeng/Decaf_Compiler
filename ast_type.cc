@@ -71,6 +71,11 @@ NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     (id=i)->SetParent(this);
 }
 
+Identifier *NamedType::get_id(void)
+{
+    return id;
+}
+
 void NamedType::PrintToStream(std::ostream& out)
 {
     out << id;

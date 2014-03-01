@@ -57,6 +57,7 @@ class ClassDecl : public Decl
     public:
         ClassDecl(Identifier *name, NamedType *extends,
                   List<NamedType*> *implements, List<Decl*> *members);
+        VarDecl *GetMemberVar(char *name);
 };
 
 class InterfaceDecl : public Decl

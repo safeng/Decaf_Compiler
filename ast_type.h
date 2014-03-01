@@ -47,6 +47,7 @@ class NamedType : public Type
 
     public:
         NamedType(Identifier *i);
+        Identifier *get_id(void);
 
         void PrintToStream(std::ostream& out);
 };

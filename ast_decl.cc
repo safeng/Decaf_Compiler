@@ -47,22 +47,6 @@ Type *VarDecl::get_type(void)
     return type;
 }
 
-ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
-                     List<NamedType*> *imp, List<Decl*> *m) :
-    Decl(n)
-{
-    // Extends can be NULL. Implements and members may be empty lists,
-    // but not NULL.
-    Assert(n != NULL && imp != NULL && m != NULL);
-    extends = ex;
-    if (extends) extends->SetParent(this);
-    (implements=imp)->SetParentAll(this);
-    (members=m)->SetParentAll(this);
-    sym_ = new Hashtable<Decl*>;
-
-    return;
-}
-
 void ClassDecl::DoCheck(void)
 {
     for (int i = 0; i < members->NumElements(); i++) {
@@ -90,6 +74,27 @@ void ClassDecl::DoCheck(void)
     // TODO: Do implementation completion check
 
     return;
+}
+
+ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
+                     List<NamedType*> *imp, List<Decl*> *m) :
+    Decl(n)
+{
+    // Extends can be NULL. Implements and members may be empty lists,
+    // but not NULL.
+    Assert(n != NULL && imp != NULL && m != NULL);
+    extends = ex;
+    if (extends) extends->SetParent(this);
+    (implements=imp)->SetParentAll(this);
+    (members=m)->SetParentAll(this);
+    sym_ = new Hashtable<Decl*>;
+
+    return;
+}
+
+VarDecl *ClassDecl::GetMemberVar(char *name)
+{
+    return dynamic_cast<VarDecl*>(sym_->Lookup(name));
 }
 
 

@@ -136,6 +136,8 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc)
 {
     (base=b)->SetParent(this);
     (subscript=s)->SetParent(this);
+
+    return;
 }
 
 
@@ -147,6 +149,8 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     base = b;
     if (base) base->SetParent(this);
     (field=f)->SetParent(this);
+
+    return;
 }
 
 void FieldAccess::DoCheck(void)
@@ -160,8 +164,21 @@ void FieldAccess::DoCheck(void)
             type_ = v->get_type();
         }
     } else {
+        NamedType *t;
         base->Check();
-        field->Check(); // TODO: Need to check class sym_
+        t = dynamic_cast<NamedType*>(base->type());
+        if (t == NULL) {
+            ReportError::InaccessibleField(field, base->type());
+        } else if (t != NULL) {
+            ClassDecl *c = GetClass(t->get_id()->get_name());
+            VarDecl *v = c->GetMemberVar(field->get_name());
+            if (v == NULL) {
+                ReportError::IdentifierNotDeclared
+                    (field, LookingForVariable);
+            } else {
+                type_ = v->get_type();
+            }
+        }
     }
 
     return;
@@ -183,9 +200,18 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     if (base == NULL) {
-        field->Check();
+        VarDecl *v = GetVar(field->get_name());
+        if (v == NULL) {
+            ReportError::IdentifierNotDeclared(field,
+                                               LookingForVariable);
+        } else {
+            type_ = v->get_type();
+        }
     } else {
+        Type *t;
+        VarDecl *v;
         base->Check();
+        t = base->type();
         field->Check(); // TODO: Need to check class sym_
     }
     for (int i = 0; i < actuals->NumElements(); i++) {
