@@ -55,8 +55,14 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
     sym_ = new Hashtable<Decl*>;
-    for (int i = 0; i < m->NumElements(); i++) {
-        Decl *newdec = m->Nth(i);
+
+    return;
+}
+
+void ClassDecl::DoCheck(void)
+{
+    for (int i = 0; i < members->NumElements(); i++) {
+        Decl *newdec = members->Nth(i);
         char *id = newdec->get_id()->get_name();
         Decl *olddec = sym_->Lookup(id);
         if (olddec == NULL) {
@@ -65,12 +71,6 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-
-    return;
-}
-
-void ClassDecl::DoCheck(void)
-{
     if (extends != NULL) {
         extends->Check();
     }
@@ -94,8 +94,14 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
     Assert(n != NULL && m != NULL);
     (members = m)->SetParentAll(this);
     sym_ = new Hashtable<Decl*>;
-    for (int i = 0; i < m->NumElements(); i++) {
-        Decl *newdec = m->Nth(i);
+
+    return;
+}
+
+void InterfaceDecl::DoCheck(void)
+{
+    for (int i = 0; i < members->NumElements(); i++) {
+        Decl *newdec = members->Nth(i);
         char *id = newdec->get_id()->get_name();
         Decl *olddec = sym_->Lookup(id);
         if (olddec == NULL) {
@@ -104,12 +110,6 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-
-    return;
-}
-
-void InterfaceDecl::DoCheck(void)
-{
     for (int i = 0; i < members->NumElements(); i++) {
         members->Nth(i)->Check();
     }
@@ -125,16 +125,6 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n)
     (formals = d)->SetParentAll(this);
     body = NULL;
     sym_ = new Hashtable<Decl*>;
-    for (int i = 0; i < d->NumElements(); i++) {
-        Decl *newdec = d->Nth(i);
-        char *id = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(id);
-        if (olddec == NULL) {
-            sym_->Enter(id, newdec);
-        } else {
-            ReportError::DeclConflict(newdec, olddec);
-        }
-    }
 
     return;
 }
@@ -148,6 +138,16 @@ void FnDecl::SetFunctionBody(Stmt *b)
 
 void FnDecl::DoCheck(void)
 {
+    for (int i = 0; i < formals->NumElements(); i++) {
+        Decl *newdec = formals->Nth(i);
+        char *id = newdec->get_id()->get_name();
+        Decl *olddec = sym_->Lookup(id);
+        if (olddec == NULL) {
+            sym_->Enter(id, newdec);
+        } else {
+            ReportError::DeclConflict(newdec, olddec);
+        }
+    }
     returnType->Check();
     for (int i = 0; i < formals->NumElements(); i++) {
         formals->Nth(i)->Check();

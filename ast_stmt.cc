@@ -13,6 +13,10 @@ Program::Program(List<Decl*> *d)
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
     sym_ = new Hashtable<Decl*>();
+}
+
+void Program::DoCheck(void)
+{
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
         char *id = newdec->get_id()->get_name();
@@ -23,10 +27,6 @@ Program::Program(List<Decl*> *d)
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-}
-
-void Program::DoCheck(void)
-{
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->Check();
     }
@@ -94,6 +94,12 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
     sym_ = new Hashtable<Decl*>();
+
+    return;
+}
+
+void StmtBlock::DoCheck(void)
+{
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
         char *id = newdec->get_id()->get_name();
@@ -104,12 +110,6 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-
-    return;
-}
-
-void StmtBlock::DoCheck(void)
-{
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->Check();
     }
