@@ -76,9 +76,6 @@ class ConditionalStmt : public Stmt
 
 class LoopStmt : public ConditionalStmt
 {
-    protected:
-        void DoCheck(void);
-
     public:
         LoopStmt(Expr *testExpr, Stmt *body);
 };
@@ -95,9 +92,6 @@ class ForStmt : public LoopStmt
 
 class WhileStmt : public LoopStmt
 {
-    protected:
-        void DoCheck(void);
-
     public:
         WhileStmt(Expr *test, Stmt *body);
 };
