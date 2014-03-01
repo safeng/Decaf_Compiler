@@ -144,7 +144,13 @@ ArithmeticExpr::ArithmeticExpr(Operator *op, Expr *rhs) :
 
 void This::DoCheck(void)
 {
-    ClassDecl *t = GetCurrentClass();
+    ClassDecl *c = GetCurrentClass();
+    if (c == NULL) {
+        ThisOutsideClassScope(this);
+    } else {
+        NamedType *t = new NamedType(c->get_id());
+        type_ = t;
+    }
 
     return;
 }
@@ -168,8 +174,8 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc)
 
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f)
-    : LValue((b != NULL) ? Join(b->GetLocation(), f->GetLocation())
-             : *f->GetLocation())
+: LValue((b != NULL) ? Join(b->GetLocation(), f->GetLocation())
+         : *f->GetLocation())
 {
     Assert(f != NULL); // b can be be NULL
     base = b;
