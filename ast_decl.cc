@@ -68,11 +68,12 @@ void ClassDecl::DoCheck(void)
     }
 
     // TODO: Do implementation completion check
-    for (int i = 0; i < implements->NumElements(); i++) {
+    for (int i = 0; i < implements->NumElements(); i++)
+	{
 		Hashtable<Decl*> *sym_impl = parent->GetInterface(implements->Nth(i))->sym_;
 		Iterator<Decl*> iter = sym_impl->GetIterator();	
 		Decl* decl = NULL;
-		while(decl = iter.GetNextValue())
+		while((decl = iter.GetNextValue()))
 		{
 			Decl * extDecl = sym_->Lookup(decl->get_id()->get_name());
 			if(extDecl == NULL)
