@@ -171,7 +171,9 @@ void FieldAccess::DoCheck(void)
             ReportError::InaccessibleField(field, base->type());
         } else if (t != NULL) {
             ClassDecl *c = GetClass(t->get_id()->get_name());
-            VarDecl *v = c->GetMemberVar(field->get_name());
+            VarDecl *v;
+            c->Check();
+            v = c->GetMemberVar(field->get_name());
             if (v == NULL) {
                 ReportError::IdentifierNotDeclared
                     (field, LookingForVariable);
@@ -208,11 +210,23 @@ void Call::DoCheck(void)
             type_ = v->get_type();
         }
     } else {
-        Type *t;
-        VarDecl *v;
+        NamedType *t;
         base->Check();
-        t = base->type();
-        field->Check(); // TODO: Need to check class sym_
+        t = dynamic_cast<NamedType*>(base->type());
+        if (t == NULL) {
+            ReportError::InaccessibleField(field, base->type());
+        } else if (t != NULL) {
+            ClassDecl *c = GetClass(t->get_id()->get_name());
+            FnDecl *f;
+            c->Check();
+            f = c->GetMemberFn(field->get_name());
+            if (f == NULL) {
+                ReportError::IdentifierNotDeclared
+                    (field, LookingForVariable);
+            } else {
+                type_ = f->get_return_type();
+            }
+        }
     }
     for (int i = 0; i < actuals->NumElements(); i++) {
         actuals->Nth(i)->Check();

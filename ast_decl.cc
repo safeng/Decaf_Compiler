@@ -97,6 +97,11 @@ VarDecl *ClassDecl::GetMemberVar(char *name)
     return dynamic_cast<VarDecl*>(sym_->Lookup(name));
 }
 
+FnDecl *ClassDecl::GetMemberFn(char *name)
+{
+    return dynamic_cast<FnDecl*>(sym_->Lookup(name));
+}
+
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 {
@@ -166,4 +171,9 @@ void FnDecl::DoCheck(void)
     }
 
     return;
+}
+
+Type *FnDecl::get_return_type(void)
+{
+    return returnType;
 }
