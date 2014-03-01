@@ -91,8 +91,8 @@ template<class Value> class Iterator {
     friend class Hashtable<Value>;
 
     private:
-    typename std::multimap<const char*, Value , ltstr>::iterator cur, end;
-    Iterator(std::multimap<const char*, Value, ltstr>& t)
+	typename std::multimap<const char*, Value , ltstr>::iterator cur, end;
+	Iterator(std::multimap<const char*, Value, ltstr>& t)
         : cur(t.begin()), end(t.end()) {}
 
     public:

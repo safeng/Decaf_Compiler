@@ -64,15 +64,13 @@ class ClassDecl : public Decl
 
 class InterfaceDecl : public Decl
 {
-    private:
-        Hashtable<Decl*> *sym_;
-
     protected:
         List<Decl*> *members;
         void DoCheck(void);
 
     public:
         InterfaceDecl(Identifier *name, List<Decl*> *members);
+        Hashtable<Decl*> *sym_;
 };
 
 class FnDecl : public Decl

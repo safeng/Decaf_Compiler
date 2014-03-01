@@ -67,10 +67,24 @@ void ClassDecl::DoCheck(void)
         implements->Nth(i)->Check();
     }
 
-    // TODO: Check declaration conflict for implements
-
     // TODO: Do implementation completion check
-
+    for (int i = 0; i < implements->NumElements(); i++) {
+		Hashtable<Decl*> *sym_impl = parent->GetInterface(implements->Nth(i))->sym_;
+		Iterator<Decl*> iter = sym_impl->GetIterator();	
+		Decl* decl = NULL;
+		while(decl = iter.GetNextValue())
+		{
+			Decl * extDecl = sym_->Lookup(decl->get_id()->get_name());
+			if(extDecl == NULL)
+			{
+				ReportError::InterfaceNotImplemented(this, implements->Nth(i));	
+				break;
+			}else
+			{
+				// TODO: type checking
+			}
+		}
+    }
     return;
 }
 
