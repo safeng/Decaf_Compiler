@@ -28,8 +28,8 @@ void Node::DoCheck(void)
 void Node::Check(void)
 {
     if (!checked_) {
-        DoCheck();
         checked_ = true;
+        DoCheck();
     }
 
     return;
