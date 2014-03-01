@@ -101,6 +101,7 @@ class CompoundExpr : public Expr
     protected:
         Operator *op;
         Expr *left, *right; // left will be NULL if unary
+        void DoCheck(void);
 
     public:
         CompoundExpr(Expr *lhs, Operator *op, Expr *rhs);

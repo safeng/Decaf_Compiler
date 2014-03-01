@@ -118,6 +118,16 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r) :
     return;
 }
 
+void CompoundExpr::DoCheck(void)
+{
+    if (left != NULL) {
+        left->Check();
+    }
+    right->Check();
+
+    return;
+}
+
 
 ArithmeticExpr::ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) :
     CompoundExpr(lhs,op,rhs)
@@ -219,14 +229,14 @@ void Call::DoCheck(void)
         t = dynamic_cast<NamedType*>(base->type());
         if (t == NULL) {
             ReportError::InaccessibleField(field, base->type());
-        } else if (t != NULL) {
+        } else {
             ClassDecl *c = GetClass(t);
             FnDecl *f;
             c->Check();
             f = c->GetMemberFn(field->get_name());
             if (f == NULL) {
                 ReportError::IdentifierNotDeclared
-                    (field, LookingForVariable);
+                    (field, LookingForFunction);
             } else {
                 type_ = f->get_return_type();
             }
