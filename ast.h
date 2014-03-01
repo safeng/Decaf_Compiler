@@ -72,6 +72,7 @@ class Node
 
         virtual ClassDecl *GetClass(NamedType *t);
         virtual ClassDecl *GetCurrentClass();
+        virtual InterfaceDecl *GetInterface(NamedType *t)
         virtual FnDecl *GetFn(char *name);
         virtual VarDecl *GetVar(char *name);
 };
