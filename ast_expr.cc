@@ -190,9 +190,19 @@ void Call::DoCheck(void)
 }
 
 
-NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
+NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc)
+{
     Assert(c != NULL);
     (cType=c)->SetParent(this);
+
+    return;
+}
+
+void NewExpr::DoCheck(void)
+{
+    cType->Check();
+
+    return;
 }
 
 
