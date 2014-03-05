@@ -63,6 +63,8 @@ class ClassDecl : public Decl
         ClassDecl *GetCurrentClass(void);
         VarDecl *GetMemberVar(char *name);
         FnDecl *GetMemberFn(char *name);
+
+		VarDecl *GetVar(Identifier *id);
 };
 
 class InterfaceDecl : public Decl

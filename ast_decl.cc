@@ -91,7 +91,7 @@ void ClassDecl::DoCheck(void)
             ReportError::IdentifierNotDeclared(extends->get_id(),
                                                LookingForClass);
         } else {
-            base->Check(); // construct sym table for base class and it
+            base->Check(); // construct sym table for base class
             MergeSymbolTable(base);
         }
     }
@@ -155,6 +155,11 @@ Hashtable<Decl*> *ClassDecl::get_sym_table(void)
 ClassDecl *ClassDecl::GetCurrentClass(void)
 {
     return this;
+}
+
+VarDecl *ClassDecl::GetVar(Identifier *id)
+{
+	return GetMemberVar(id->get_name());
 }
 
 VarDecl *ClassDecl::GetMemberVar(char *name)

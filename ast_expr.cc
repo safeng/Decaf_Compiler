@@ -330,7 +330,7 @@ void ArrayAccess::DoCheck(void)
         subscript_->type() == Type::errorType) {
         type_ = Type::errorType;
     } else {
-        if (dynamic_cast<ArrayType*>base_->type() == NULL) {
+        if (dynamic_cast<ArrayType*>(base_->type()) == NULL) {
             ReportError::BracketsOnNonArray(base_);
             type_ = Type::errorType;
         }
@@ -370,6 +370,7 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 void FieldAccess::DoCheck(void)
 {
+	type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
         VarDecl *v = GetVar(field);
         if (v == NULL) {
@@ -378,20 +379,25 @@ void FieldAccess::DoCheck(void)
         } else {
             type_ = v->get_type();
         }
-    } else {
+    } else { // must be this.field
         This *th = dynamic_cast<This*>(base);
         if (th == NULL) {
-            base->Check();
+            base->Check(); // check base
             ReportError::InaccessibleField(field, base->type());
         } else {
+			// Even with this.field, we should check whether we are in a class scope
+			th->Check();
             ClassDecl *c = GetCurrentClass();
-            NamedType *t = new NamedType(c->get_id());
-            VarDecl *v = c->GetMemberVar(field->get_name());
-            if (v == NULL) {
-                ReportError::FieldNotFoundInBase(field, t);
-            } else {
-                type_ = v->get_type();
-            }
+			if(c != NULL)
+			{
+				//NamedType *t = new NamedType(c->get_id());
+				VarDecl *v = c->GetMemberVar(field->get_name());
+				if (v == NULL) {
+					ReportError::FieldNotFoundInBase(field, base->type());
+				} else {
+					type_ = v->get_type();
+				}
+			}
         }
     }
 
