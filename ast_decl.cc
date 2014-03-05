@@ -62,8 +62,11 @@ void ClassDecl::MergeSymbolTable(ClassDecl *base)
             sym_table_->Enter(name, d);
         } else if (dynamic_cast<VarDecl*>(nd) != NULL ||
                    dynamic_cast<VarDecl*>(d) != NULL) {
+			sym_table_->Enter(name, d); // override with decl in superclass
             ReportError::DeclConflict(nd, d);
         } // TODO: Type checking for function override.
+
+		d = iter.GetNextValue();
     }
 
     return;
@@ -88,7 +91,7 @@ void ClassDecl::DoCheck(void)
             ReportError::IdentifierNotDeclared(extends->get_id(),
                                                LookingForClass);
         } else {
-            base->Check();
+            base->Check(); // construct sym table for base class and it
             MergeSymbolTable(base);
         }
     }
@@ -104,6 +107,7 @@ void ClassDecl::DoCheck(void)
     {
         NamedType *nt = implements->Nth(i);
         InterfaceDecl *intd = parent->GetInterface(nt);
+		intd->Check(); // construct sym table for interface
         if (intd == NULL) {
             ReportError::IdentifierNotDeclared(nt->get_id(),
                                                LookingForInterface);
@@ -120,6 +124,7 @@ void ClassDecl::DoCheck(void)
                 } else {
                     // TODO: type checking
                 }
+				decl = iter.GetNextValue();
             }
         }
     }
