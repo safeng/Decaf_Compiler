@@ -41,6 +41,8 @@ class ClassDecl;
 class InterfaceDecl;
 class NamedType;
 
+class Identifier;
+
 class Node
 {
     protected:
@@ -52,32 +54,20 @@ class Node
 
     public:
         Node(yyltype loc);
-        Node();
+        Node(void);
 
-        yyltype *GetLocation()
-        {
-            return location;
-        }
-
-        void SetParent(Node *p)
-        {
-            parent = p;
-        }
-
-        Node *GetParent()
-        {
-            return parent;
-        }
+        yyltype *GetLocation(void);
+        void SetParent(Node *p);
+        Node *GetParent(void);
 
         void Check(void);
 
         virtual ClassDecl *GetClass(NamedType *t);
-        virtual ClassDecl *GetCurrentClass();
+        virtual ClassDecl *GetCurrentClass(void);
         virtual InterfaceDecl *GetInterface(NamedType *t);
-        virtual FnDecl *GetFn(char *name);
-        virtual VarDecl *GetVar(char *name);
+        virtual FnDecl *GetFn(Identifier *id);
+        virtual VarDecl *GetVar(Identifier *id);
 };
-
 
 class Identifier : public Node
 {
@@ -91,7 +81,6 @@ class Identifier : public Node
                                         Identifier *id);
 };
 
-
 // This node class is designed to represent a portion of the tree that
 // encountered syntax errors during parsing. The partial completed tree
 // is discarded along with the states being popped, and an instance of
@@ -100,7 +89,7 @@ class Identifier : public Node
 class Error : public Node
 {
     public:
-        Error() : Node() {}
+        Error(void);
 };
 
 #endif

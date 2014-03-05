@@ -188,7 +188,7 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 void FieldAccess::DoCheck(void)
 {
     if (base == NULL) {
-        VarDecl *v = GetVar(field->get_name());
+        VarDecl *v = GetVar(field);
         if (v == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForVariable);
@@ -231,7 +231,7 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     if (base == NULL) {
-        FnDecl *f = GetFn(field->get_name());
+        FnDecl *f = GetFn(field);
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForFunction);

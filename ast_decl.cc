@@ -11,57 +11,58 @@
 #include "hashtable.h"
 #include "list.h"
 
-Decl::Decl(Identifier *n) : Node(*n->GetLocation())
+Decl::Decl(Identifier *id) : Node(*id->GetLocation())
 {
-    Assert(n != NULL);
-    (id=n)->SetParent(this);
+    Assert(id != NULL);
+    (id_ = id)->SetParent(this);
 
     return;
 }
 
 Identifier *Decl::get_id(void)
 {
-    return id;
+    return id_;
 }
 
 std::ostream& operator<<(std::ostream& out, Decl *d)
 {
-    return out << d->id;
+    return out << d->id_;
 }
 
 
 VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
 {
     Assert(n != NULL && t != NULL);
-    (type=t)->SetParent(this);
+    (type_ = t)->SetParent(this);
 
     return;
 }
 
 void VarDecl::DoCheck(void)
 {
-    type->Check();
+    type_->Check();
 
     return;
 }
 
 Type *VarDecl::get_type(void)
 {
-    return type;
+    return type_;
 }
 
-void ClassDecl::MergeSymTable(ClassDecl base)
+void ClassDecl::MergeSymbolTable(ClassDecl *base)
 {
     // (1) Conflicting declaration check
-    Iterator<Decl*> iter = base->sym_->GetIterator();
+    Iterator<Decl*> iter = base->get_sym_table()->GetIterator();
     Decl *d = iter.GetNextValue();
     while (d != NULL) {
         char *name = d->get_id()->get_name();
-        Decl *nd = sym_->Lookup(name);
+        Decl *nd = sym_table_->Lookup(name);
         if (nd == NULL) {
-            sym_->Enter(name, newdec);
-        } else if (dynamic_cast<VarDecl*>(nd) != NULL) {
-            ReportError::DeclConflict(newdec, olddec);
+            sym_table_->Enter(name, d);
+        } else if (dynamic_cast<VarDecl*>(nd) != NULL ||
+                   dynamic_cast<VarDecl*>(d) != NULL) {
+            ReportError::DeclConflict(nd, d);
         } // TODO: Type checking for function override.
     }
 
@@ -72,14 +73,14 @@ void ClassDecl::DoCheck(void)
 {
     // (1) Conflicting declaration check
     for (int i = 0; i < members->NumElements(); i++) {
-        Decl *newdec = members->Nth(i);
-        char *name = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(name);
-        newdec->Check();
-        if (olddec == NULL) {
-            sym_->Enter(name, newdec);
+        Decl *newdecl = members->Nth(i);
+        char *name = newdecl->get_id()->get_name();
+        Decl *olddecl = sym_table_->Lookup(name);
+        newdecl->Check();
+        if (olddecl == NULL) {
+            sym_table_->Enter(name, newdecl);
         } else {
-            ReportError::DeclConflict(newdec, olddec);
+            ReportError::DeclConflict(newdecl, olddecl);
         }
     }
     if (extends != NULL) {
@@ -89,7 +90,7 @@ void ClassDecl::DoCheck(void)
                                                LookingForClass);
         } else {
             base->Check();
-            MergeSymTable(base);
+            MergeSymbolTable(base);
         }
     }
 
@@ -99,7 +100,7 @@ void ClassDecl::DoCheck(void)
         if (intd == NULL) {
             ReportError::IdentifierNotDeclared(implements->Nth(i)->get_id(), LookingForInterface);
         } else {
-            Hashtable<Decl*> *sym_impl = intd->sym_;
+            Hashtable<Decl*> *sym_impl = intd->get_sym_table();
             Iterator<Decl*> iter = sym_impl->GetIterator();	
             Decl* decl = NULL;
             while((decl = iter.GetNextValue()))
@@ -131,9 +132,14 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex,
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
-    sym_ = new Hashtable<Decl*>;
+    sym_table_ = new Hashtable<Decl*>;
 
     return;
+}
+
+Hashtable<Decl*> *ClassDecl::get_sym_table(void)
+{
+    return sym_table_;
 }
 
 ClassDecl *ClassDecl::GetCurrentClass(void)
@@ -143,86 +149,103 @@ ClassDecl *ClassDecl::GetCurrentClass(void)
 
 VarDecl *ClassDecl::GetMemberVar(char *name)
 {
-    return dynamic_cast<VarDecl*>(sym_->Lookup(name));
+    return dynamic_cast<VarDecl*>(sym_table_->Lookup(name));
 }
 
 FnDecl *ClassDecl::GetMemberFn(char *name)
 {
-    return dynamic_cast<FnDecl*>(sym_->Lookup(name));
+    return dynamic_cast<FnDecl*>(sym_table_->Lookup(name));
 }
 
-
-InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
-{
-    Assert(n != NULL && m != NULL);
-    (members = m)->SetParentAll(this);
-    sym_ = new Hashtable<Decl*>;
-
-    return;
-}
 
 void InterfaceDecl::DoCheck(void)
 {
     // (1) Conflicting declaration check
-    for (int i = 0; i < members->NumElements(); i++) {
-        Decl *newdec = members->Nth(i);
-        char *name = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(name);
-        newdec->Check();
-        if (olddec == NULL) {
-            sym_->Enter(name, newdec);
+    for (int i = 0; i < members_->NumElements(); i++) {
+        Decl *newdecl = members_->Nth(i);
+        char *name = newdecl->get_id()->get_name();
+        Decl *olddecl = sym_table_->Lookup(name);
+        newdecl->Check();
+        if (olddecl == NULL) {
+            sym_table_->Enter(name, newdecl);
         } else {
-            ReportError::DeclConflict(newdec, olddec);
+            ReportError::DeclConflict(newdecl, olddecl);
         }
     }
 
     return;
 }
 
+InterfaceDecl::InterfaceDecl(Identifier *name, List<Decl*> *members) :
+    Decl(name)
+{
+    Assert(name != NULL && members != NULL);
+    (members_ = members)->SetParentAll(this);
+    sym_table_ = new Hashtable<Decl*>;
+
+    return;
+}
+
+Hashtable<Decl*> *InterfaceDecl::get_sym_table(void)
+{
+    return sym_table_;
+}
+
+
+void FnDecl::DoCheck(void)
+{
+    returnType_->Check();
+
+    // (1) Conflicting declaration check
+    for (int i = 0; i < formals_->NumElements(); i++) {
+        Decl *newdecl = formals_->Nth(i);
+        char *name = newdecl->get_id()->get_name();
+        Decl *olddecl = sym_table_->Lookup(name);
+        newdecl->Check();
+        if (olddecl == NULL) {
+            sym_table_->Enter(name, newdecl);
+        } else {
+            ReportError::DeclConflict(newdecl, olddecl);
+        }
+    }
+
+    if (body_ != NULL) {
+        body_->Check();
+    }
+
+    return;
+}
 
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n)
 {
     Assert(n != NULL && r!= NULL && d != NULL);
-    (returnType = r)->SetParent(this);
-    (formals = d)->SetParentAll(this);
-    body = NULL;
-    sym_ = new Hashtable<Decl*>;
-
-    return;
-}
-
-void FnDecl::SetFunctionBody(Stmt *b)
-{
-    (body = b)->SetParent(this);
-
-    return;
-}
-
-void FnDecl::DoCheck(void)
-{
-    returnType->Check();
-
-    // (1) Conflicting declaration check
-    for (int i = 0; i < formals->NumElements(); i++) {
-        Decl *newdec = formals->Nth(i);
-        char *name = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(name);
-        newdec->Check();
-        if (olddec == NULL) {
-            sym_->Enter(name, newdec);
-        } else {
-            ReportError::DeclConflict(newdec, olddec);
-        }
-    }
-
-    if (body != NULL) {
-        body->Check();
-    }
+    (returnType_ = r)->SetParent(this);
+    (formals_ = d)->SetParentAll(this);
+    body_ = NULL;
+    sym_table_ = new Hashtable<Decl*>;
 
     return;
 }
 
 Type *FnDecl::get_return_type(void)
 {
-    return returnType;
+    return returnType_;
+}
+
+void FnDecl::SetFunctionBody(Stmt *b)
+{
+    (body_ = b)->SetParent(this);
+
+    return;
+}
+
+VarDecl *FnDecl::GetVar(Identifier *id)
+{
+    char *name = id->get_name();
+    VarDecl *decl = dynamic_cast<VarDecl*>(sym_table_->Lookup(name));
+    if (decl == NULL) {
+        decl = parent->GetVar(id);
+    }
+
+    return decl;
 }

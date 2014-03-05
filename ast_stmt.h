@@ -28,17 +28,18 @@ class Expr;
 class Program : public Node
 {
     private:
-        Hashtable<Decl*> *sym_; // A program has a symbol table
+        Hashtable<Decl*> *sym_table_;
 
     protected:
-        List<Decl*> *decls;
+        List<Decl*> *decls_;
         void DoCheck(void);
 
     public:
-        Program(List<Decl*> *declList);
+        Program(List<Decl*> *decls);
+
         ClassDecl *GetClass(NamedType *t);
-        FnDecl *GetFn(char *name);
-        VarDecl *GetVar(char *name);
+        FnDecl *GetFn(Identifier *id);
+        VarDecl *GetVar(Identifier *id);
         InterfaceDecl *GetInterface(NamedType *t);
 };
 
@@ -58,11 +59,12 @@ class StmtBlock : public Stmt
         List<VarDecl*> *decls;
         List<Stmt*> *stmts;
         void DoCheck(void);
-        VarDecl *GetVar(char *name);
 
     public:
         StmtBlock(List<VarDecl*> *variableDeclarations,
                   List<Stmt*> *statements);
+
+        VarDecl *GetVar(Identifier *id);
 };
 
 class ConditionalStmt : public Stmt

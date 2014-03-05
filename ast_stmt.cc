@@ -8,76 +8,67 @@
 #include "ast_expr.h"
 #include "errors.h"
 
-Program::Program(List<Decl*> *d)
+Program::Program(List<Decl*> *decls)
 {
-    Assert(d != NULL);
-    (decls=d)->SetParentAll(this);
-    sym_ = new Hashtable<Decl*>();
+    Assert(decls != NULL);
+    (decls = decls)->SetParentAll(this);
+    sym_table_ = new Hashtable<Decl*>();
 }
 
 void Program::DoCheck(void)
 {
     // (1) Conflicting declaration check
-    for (int i = 0; i < decls->NumElements(); i++) {
-        Decl *newdec = decls->Nth(i);
-        char *name = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(name);
-        decls->Nth(i)->Check();
-        if (olddec == NULL) {
-            sym_->Enter(name, newdec);
+    for (int i = 0; i < decls_->NumElements(); i++) {
+        Decl *newdecl = decls_->Nth(i);
+        char *name = newdecl->get_id()->get_name();
+        Decl *olddecl = sym_table_->Lookup(name);
+        if (olddecl == NULL) {
+            sym_table_->Enter(name, newdecl);
         } else {
-            ReportError::DeclConflict(newdec, olddec);
+            ReportError::DeclConflict(newdecl, olddecl);
         }
+    }
+
+    // Check should always follow construction of the symbol table,
+    // otherwise any forward declaration will fail.
+    for (int i = 0; i < decls_->NumElements(); i++) {
+        decls_->Nth(i)->Check();
     }
 
     return;
 }
 
-/* The program maintains the symbol tables that contains all the class and interface declarations */
-// Return the class definitions
 ClassDecl *Program::GetClass(NamedType *t)
 {
-    Decl *dec = sym_->Lookup(t->get_id()->get_name());
-    ClassDecl *olddec = dynamic_cast<ClassDecl*>(dec);
-    if (olddec != NULL) {
-        olddec->Check();
-    }
+    Decl *dec = sym_table_->Lookup(t->get_id()->get_name());
+    ClassDecl *olddecl = dynamic_cast<ClassDecl*>(dec);
 
-    return olddec;
+    return olddecl;
 }
 
-FnDecl *Program::GetFn(char *name)
+FnDecl *Program::GetFn(Identifier *id)
 {
-    Decl *dec = sym_->Lookup(name);
-    FnDecl *olddec = dynamic_cast<FnDecl*>(dec);
-    if (olddec != NULL) {
-        olddec->Check();
-    }
+    Decl *dec = sym_table_->Lookup(id->get_name());
+    FnDecl *olddecl = dynamic_cast<FnDecl*>(dec);
 
-    return olddec;
+    return olddecl;
 }
 
-VarDecl *Program::GetVar(char *name)
+VarDecl *Program::GetVar(Identifier *id)
 {
-    Decl *dec = sym_->Lookup(name);
-    VarDecl *olddec = dynamic_cast<VarDecl*>(dec);
-    if (olddec != NULL) {
-        olddec->Check();
-    }
+    Decl *dec = sym_table_->Lookup(id->get_name());
+    VarDecl *olddecl = dynamic_cast<VarDecl*>(dec);
 
-    return olddec;
+    return olddecl;
 }
 
 InterfaceDecl *Program::GetInterface(NamedType *t)
 {
     char *str = t->get_id()->get_name();
-    Decl *dec = sym_->Lookup(str);
-    InterfaceDecl *olddec = dynamic_cast<InterfaceDecl*>(dec);
-    if (olddec != NULL) {
-        olddec->Check();
-    }
+    Decl *dec = sym_table_->Lookup(str);
+    InterfaceDecl *olddecl = dynamic_cast<InterfaceDecl*>(dec);
 
-    return olddec;
+    return olddecl;
 }
 
 Stmt::Stmt(void) : Node()
@@ -104,15 +95,20 @@ void StmtBlock::DoCheck(void)
 {
     // (1) Conflicting declaration check
     for (int i = 0; i < decls->NumElements(); i++) {
-        Decl *newdec = decls->Nth(i);
-        char *name = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(name);
-        newdec->Check();
-        if (olddec == NULL) {
-            sym_->Enter(name, newdec);
+        Decl *newdecl = decls->Nth(i);
+        char *name = newdecl->get_id()->get_name();
+        Decl *olddecl = sym_->Lookup(name);
+        if (olddecl == NULL) {
+            sym_->Enter(name, newdecl);
         } else {
-            ReportError::DeclConflict(newdec, olddec);
+            ReportError::DeclConflict(newdecl, olddecl);
         }
+    }
+
+    // Check should always follow construction of the symbol table,
+    // otherwise any forward declaration will fail.
+    for (int i = 0; i < decls->NumElements(); i++) {
+        decls->Nth(i)->Check();
     }
 
     for (int i = 0; i < stmts->NumElements(); i++) {
@@ -122,17 +118,17 @@ void StmtBlock::DoCheck(void)
     return;
 }
 
-VarDecl *StmtBlock::GetVar(char *name)
+VarDecl *StmtBlock::GetVar(Identifier *id)
 {
-    Decl *dec = sym_->Lookup(name);
-    VarDecl *olddec = dynamic_cast<VarDecl*>(dec);
-    if (olddec != NULL) {
-        olddec->Check();
+    Decl *decl = sym_->Lookup(id->get_name());
+    VarDecl *olddecl = dynamic_cast<VarDecl*>(decl);
+    if (olddecl != NULL) {
+        olddecl->Check();
     } else {
-        olddec = parent->GetVar(name);
+        olddecl = parent->GetVar(id);
     }
 
-    return olddec;
+    return olddecl;
 }
 
 

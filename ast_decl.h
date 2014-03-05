@@ -24,10 +24,10 @@ class Stmt;
 class Decl : public Node
 {
     protected:
-        Identifier *id;
+        Identifier *id_;
 
     public:
-        Decl(Identifier *name);
+        Decl(Identifier *id);
         Identifier *get_id(void);
         friend std::ostream& operator<<(std::ostream& out, Decl *d);
 };
@@ -35,7 +35,7 @@ class Decl : public Node
 class VarDecl : public Decl
 {
     protected:
-        Type *type;
+        Type *type_;
         void DoCheck(void);
 
     public:
@@ -46,7 +46,8 @@ class VarDecl : public Decl
 class ClassDecl : public Decl
 {
     private:
-        void MergeSymTable(ClassDecl base);
+        Hashtable<Decl*> *sym_table_;
+        void MergeSymbolTable(ClassDecl *base);
 
     protected:
         List<Decl*> *members;
@@ -55,11 +56,10 @@ class ClassDecl : public Decl
         void DoCheck(void);
 
     public:
-        Hashtable<Decl*> *sym_;
-
         ClassDecl(Identifier *name, NamedType *extends,
                   List<NamedType*> *implements, List<Decl*> *members);
 
+        Hashtable<Decl*> *get_sym_table(void);
         ClassDecl *GetCurrentClass(void);
         VarDecl *GetMemberVar(char *name);
         FnDecl *GetMemberFn(char *name);
@@ -67,31 +67,36 @@ class ClassDecl : public Decl
 
 class InterfaceDecl : public Decl
 {
+    private:
+        Hashtable<Decl*> *sym_table_;
+
     protected:
-        List<Decl*> *members;
+        List<Decl*> *members_;
         void DoCheck(void);
 
     public:
         InterfaceDecl(Identifier *name, List<Decl*> *members);
-        Hashtable<Decl*> *sym_;
+
+        Hashtable<Decl*> *get_sym_table(void);
 };
 
 class FnDecl : public Decl
 {
     private:
-        Hashtable<Decl*> *sym_;
+        Hashtable<Decl*> *sym_table_;
 
     protected:
-        List<VarDecl*> *formals;
-        Type *returnType;
-        Stmt *body;
+        List<VarDecl*> *formals_;
+        Type *returnType_;
+        Stmt *body_;
         void DoCheck(void);
 
     public:
         FnDecl(Identifier *name, Type *returnType,
                List<VarDecl*> *formals);
-        void SetFunctionBody(Stmt *b);
         Type *get_return_type(void);
+        void SetFunctionBody(Stmt *b);
+        VarDecl *GetVar(Identifier *id);
 };
 
 #endif
