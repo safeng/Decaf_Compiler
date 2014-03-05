@@ -53,6 +53,8 @@ class ArrayType : public Type
 
     public:
         ArrayType(yyltype loc, Type *t);
+
+        Type *elem(void);
 };
 
 #endif

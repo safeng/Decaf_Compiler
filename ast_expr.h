@@ -128,21 +128,32 @@ class RelationalExpr : public CompoundExpr
 
 class EqualityExpr : public CompoundExpr
 {
+    protected:
+        void DoCheck(void);
+
     public:
-        EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
-        const char *GetPrintNameForNode() { return "EqualityExpr"; }
+        EqualityExpr(Expr *lhs, Operator *op, Expr *rhs);
+
+        const char *GetPrintNameForNode(void);
 };
 
 class LogicalExpr : public CompoundExpr
 {
+    protected:
+        void DoCheck(void);
+
     public:
-        LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
-        LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
-        const char *GetPrintNameForNode() { return "LogicalExpr"; }
+        LogicalExpr(Expr *lhs, Operator *op, Expr *rhs);
+        LogicalExpr(Operator *op, Expr *rhs);
+
+        const char *GetPrintNameForNode(void);
 };
 
 class AssignExpr : public CompoundExpr
 {
+    protected:
+        void DoCheck(void);
+
     public:
         AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
         const char *GetPrintNameForNode() { return "AssignExpr"; }
@@ -166,7 +177,7 @@ class This : public Expr
 class ArrayAccess : public LValue
 {
     protected:
-        Expr *base, *subscript;
+        Expr *base_, *subscript_;
         void DoCheck(void);
 
     public:

@@ -144,7 +144,7 @@ void ArithmeticExpr::DoCheck(void)
     } else {
         if (left_->type() == Type::errorType ||
             right_->type() == Type::errorType) {
-            type_ = Type:errorType;
+            type_ = Type::errorType;
         } else if (left_->type() == right_->type() &&
                    (left_->type() == Type::intType ||
                     left_->type() == Type::doubleType)) {
@@ -178,7 +178,7 @@ void RelationalExpr::DoCheck(void)
     OperandCheck();
     if (left_->type() == Type::errorType ||
         right_->type() == Type::errorType) {
-        type_ = Type:errorType;
+        type_ = Type::errorType;
     } else if (left_->type() == right_->type() &&
                (left_->type() == Type::intType ||
                 left_->type() == Type::doubleType)) {
@@ -192,23 +192,98 @@ void RelationalExpr::DoCheck(void)
     return;
 }
 
-RelationalExpr::RelationalExpr(Expr *lhs, Operator *op, Expr *rhs)
-    : CompoundExpr(lhs, op, rhs)
+RelationalExpr::RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) :
+    CompoundExpr(lhs, op, rhs)
 {
     return;
 }
 
-/*** class EqualityExpr ********************************************/
+/*** class EqualityExpr **********************************************/
 
 void EqualityExpr::DoCheck(void)
 {
     OperandCheck();
     if (left_->type() == Type::errorType ||
         right_->type() == Type::errorType) {
-        type_ = Type:errorType;
-    } else if (left_->type() == right_->type() &&
-               (left_->type() == Type::intType ||
-                left_->type() == Type::doubleType)) {
+        type_ = Type::errorType;
+    } else if (left_->type() == right_->type()) {
+        type_ = Type::boolType;
+    } else {
+        ReportError::IncompatibleOperand(op_, left_->type(),
+                                         right_->type());
+        type_ = Type::errorType;
+    }
+
+    return;
+}
+
+EqualityExpr::EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) :
+    CompoundExpr(lhs, op, rhs)
+{
+    return;
+}
+
+char *EqualityExpr::GetPrintNameForNode(void)
+{
+    return "EqualityExpr";
+}
+
+/*** class LogicalExpr ***********************************************/
+
+void LogicalExpr::DoCheck(void)
+{
+    OperandCheck();
+    if (left_ == NULL) {
+        if (right_->type() == Type::boolType ||
+            right_->type() == Type::errorType) {
+            type_ = right_->type();
+        } else {
+            ReportError::IncompatibleOperand(op_, right_->type());
+            type_ = Type::errorType;
+        }
+    } else {
+        if (left_->type() == Type::errorType ||
+            right_->type() == Type::errorType) {
+            type_ = Type:errorType;
+        } else if (left_->type() == right_->type() &&
+                   left_->type() == Type::boolType) {
+            type_ = Type::boolType;
+        } else {
+            ReportError::IncompatibleOperand(op_, left_->type(),
+                                             right_->type());
+            type_ = Type::errorType;
+        }
+    }
+
+    return;
+}
+
+LogicalExpr::LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) :
+    CompoundExpr(lhs, op, rhs)
+{
+    return;
+}
+
+LogicalExpr::LogicalExpr(Operator *op, Expr *rhs) :
+    CompoundExpr(op, rhs)
+{
+    return;
+}
+
+char *LogicalExpr::GetPrintNameForNode(void)
+{
+    return "LogicalExpr";
+}
+
+/*** class AssignExpr ************************************************/
+
+void AssignExpr::DoCheck(void)
+{
+    OperandCheck();
+    if (left_->type() == Type::errorType ||
+        right_->type() == Type::errorType) {
+        type_ = Type::errorType;
+    } else if (left_->type() == right_->type()) {
         type_ = left_->type();
     } else {
         ReportError::IncompatibleOperand(op_, left_->type(),
@@ -219,10 +294,15 @@ void EqualityExpr::DoCheck(void)
     return;
 }
 
-EqualityExpr::EqualityExpr(Expr *lhs, Operator *op, Expr *rhs)
-    : CompoundExpr(lhs, op, rhs)
+AssignExpr::AssignExpr(Expr *lhs, Operator *op, Expr *rhs) :
+    CompoundExpr(lhs, op, rhs)
 {
     return;
+}
+
+char *AssignExpr::GetPrintNameForNode(void)
+{
+    return "AssignExpr";
 }
 
 /*** class This ******************************************************/
@@ -232,9 +312,9 @@ void This::DoCheck(void)
     ClassDecl *c = GetCurrentClass();
     if (c == NULL) {
         ReportError::ThisOutsideClassScope(this);
+        type_ = Type::errorType;
     } else {
-        NamedType *t = new NamedType(c->get_id());
-        type_ = t;
+        type_ = new NamedType(c->get_id());
     }
 
     return;
@@ -244,16 +324,33 @@ void This::DoCheck(void)
 
 void ArrayAccess::DoCheck(void)
 {
-    base->Check();
-    subscript->Check();
+    base_->Check();
+    subscript_->Check();
+    if (base_->type() == Type::errorType ||
+        subscript_->type() == Type::errorType) {
+        type_ = Type::errorType;
+    } else {
+        if (dynamic_cast<ArrayType*>base_->type() == NULL) {
+            ReportError::BracketsOnNonArray(base_);
+            type_ = Type::errorType;
+        }
+        if (subscript_->type() == Type::intType) {
+            ReportError::SubscriptNotInteger(subscript_);
+            type_ = Type::errorType;
+        }
+    }
+    if (type_ == NULL) {
+        type_ = base_->type()->elem();
+    }
 
     return;
 }
 
-ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc)
+ArrayAccess::ArrayAccess(yyltype loc, Expr *base, Expr *subscript) :
+    LValue(loc)
 {
-    (base=b)->SetParent(this);
-    (subscript=s)->SetParent(this);
+    (base_ = base)->SetParent(this);
+    (subscript_ = subscript)->SetParent(this);
 
     return;
 }

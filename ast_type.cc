@@ -94,3 +94,8 @@ ArrayType::ArrayType(yyltype loc, Type *t) : Type(loc)
 
     return;
 }
+
+Type *ArrayType::elem(void)
+{
+    return elem_;
+}
