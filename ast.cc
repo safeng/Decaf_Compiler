@@ -40,7 +40,7 @@ ClassDecl *Node::GetClass(NamedType *t)
     ClassDecl *c;
 
     if (parent != NULL) {
-        c = parent->GetClass(t); // Recursively find classDecl
+        c = parent->GetClass(t); // Recursively find classDecl. Stop at Program Node
     } else {
         c = NULL;
     }

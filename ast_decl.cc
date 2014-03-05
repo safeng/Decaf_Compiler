@@ -50,14 +50,13 @@ Type *VarDecl::get_type(void)
 void ClassDecl::DoCheck(void)
 {
     if (extends != NULL) {
-		//extends->Check(); // PROBLEM:: we know we need class. Duplicate code
 		ClassDecl * baseClassDecl = GetClass(extends);
 		if(baseClassDecl == NULL)
 			ReportError::IdentifierNotDeclared(extends->get_id(), LookingForClass);
 		else
 			*sym_ = *baseClassDecl->sym_; // copy symbol table of base class
     }
-
+	// Add all members including functions and variables
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *newdec = members->Nth(i);
         char *id = newdec->get_id()->get_name();
@@ -65,7 +64,15 @@ void ClassDecl::DoCheck(void)
         if (olddec == NULL) {
             sym_->Enter(id, newdec);
         } else {
-            ReportError::DeclConflict(newdec, olddec);
+			// Maybe function overriding
+			FnDecl * overrideDecl = dynamic_cast<FnDecl*>(olddec);
+			FnDecl * newDecl = dynamic_cast<FnDecl*>(newdec);
+			if(overrideDecl == NULL || newDecl == NULL) // either is a variable
+				ReportError::DeclConflict(newdec, olddec);
+			else
+			{
+				// TODO: Overridden method type checking
+			}
         }
     }
 
