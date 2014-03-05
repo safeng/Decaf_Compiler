@@ -45,6 +45,9 @@ class VarDecl : public Decl
 
 class ClassDecl : public Decl
 {
+    private:
+        void MergeSymTable(ClassDecl base);
+
     protected:
         List<Decl*> *members;
         NamedType *extends;

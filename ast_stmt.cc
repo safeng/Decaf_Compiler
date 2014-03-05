@@ -17,18 +17,17 @@ Program::Program(List<Decl*> *d)
 
 void Program::DoCheck(void)
 {
+    // (1) Conflicting declaration check
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
-        char *id = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(id);
+        char *name = newdec->get_id()->get_name();
+        Decl *olddec = sym_->Lookup(name);
+        decls->Nth(i)->Check();
         if (olddec == NULL) {
-            sym_->Enter(id, newdec);
+            sym_->Enter(name, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
-    }
-    for (int i = 0; i < decls->NumElements(); i++) {
-        decls->Nth(i)->Check();
     }
 
     return;
@@ -103,19 +102,19 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
 
 void StmtBlock::DoCheck(void)
 {
+    // (1) Conflicting declaration check
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *newdec = decls->Nth(i);
-        char *id = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(id);
+        char *name = newdec->get_id()->get_name();
+        Decl *olddec = sym_->Lookup(name);
+        newdec->Check();
         if (olddec == NULL) {
-            sym_->Enter(id, newdec);
+            sym_->Enter(name, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-    for (int i = 0; i < decls->NumElements(); i++) {
-        decls->Nth(i)->Check();
-    }
+
     for (int i = 0; i < stmts->NumElements(); i++) {
         stmts->Nth(i)->Check();
     }

@@ -1,12 +1,15 @@
-/* File: ast_decl.cc
- * -----------------
- * Implementation of Decl node classes.
- */
+/**** ast_decl.cc - ASTs of declarations ******************************
+ *
+ * Copyright © 2014 Shuang Feng, Hongjiu Zhang
+ *
+ * All rights reserved.                                              */
 
 #include "ast_decl.h"
 #include "ast_type.h"
 #include "ast_stmt.h"
 #include "errors.h"
+#include "hashtable.h"
+#include "list.h"
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation())
 {
@@ -47,32 +50,46 @@ Type *VarDecl::get_type(void)
     return type;
 }
 
+void ClassDecl::MergeSymTable(ClassDecl base)
+{
+    // (1) Conflicting declaration check
+    Iterator<Decl*> iter = base->sym_->GetIterator();
+    Decl *d = iter.GetNextValue();
+    while (d != NULL) {
+        char *name = d->get_id()->get_name();
+        Decl *nd = sym_->Lookup(name);
+        if (nd == NULL) {
+            sym_->Enter(name, newdec);
+        } else if (dynamic_cast<VarDecl*>(nd) != NULL) {
+            ReportError::DeclConflict(newdec, olddec);
+        } // TODO: Type checking for function override.
+    }
+
+    return;
+}
+
 void ClassDecl::DoCheck(void)
 {
-    if (extends != NULL) {
-		ClassDecl * baseClassDecl = GetClass(extends);
-		if(baseClassDecl == NULL)
-			ReportError::IdentifierNotDeclared(extends->get_id(), LookingForClass);
-		else
-			*sym_ = *baseClassDecl->sym_; // copy symbol table of base class
-    }
-	// Add all members including functions and variables
+    // (1) Conflicting declaration check
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *newdec = members->Nth(i);
-        char *id = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(id); // class has symbol table containing all functions and members
+        char *name = newdec->get_id()->get_name();
+        Decl *olddec = sym_->Lookup(name);
+        newdec->Check();
         if (olddec == NULL) {
-            sym_->Enter(id, newdec);
+            sym_->Enter(name, newdec);
         } else {
-			// Maybe function overriding
-			FnDecl * overrideDecl = dynamic_cast<FnDecl*>(olddec);
-			FnDecl * newDecl = dynamic_cast<FnDecl*>(newdec);
-			if(overrideDecl == NULL || newDecl == NULL) // either is a variable
-				ReportError::DeclConflict(newdec, olddec);
-			else
-			{
-				// TODO: Overridden method type checking
-			}
+            ReportError::DeclConflict(newdec, olddec);
+        }
+    }
+    if (extends != NULL) {
+        ClassDecl *base = GetClass(extends);
+        if (base == NULL) {
+            ReportError::IdentifierNotDeclared(extends->get_id(),
+                                               LookingForClass);
+        } else {
+            base->Check();
+            MergeSymTable(base);
         }
     }
 
@@ -87,7 +104,7 @@ void ClassDecl::DoCheck(void)
             Decl* decl = NULL;
             while((decl = iter.GetNextValue()))
             {
-				// PROBLEM:: Should look up only function declarations
+                // PROBLEM:: Should look up only function declarations
                 FnDecl * extDecl = GetMemberFn(decl->get_id()->get_name());
                 if(extDecl == NULL)
                 {
@@ -146,18 +163,17 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n)
 
 void InterfaceDecl::DoCheck(void)
 {
+    // (1) Conflicting declaration check
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *newdec = members->Nth(i);
-        char *id = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(id);
+        char *name = newdec->get_id()->get_name();
+        Decl *olddec = sym_->Lookup(name);
+        newdec->Check();
         if (olddec == NULL) {
-            sym_->Enter(id, newdec);
+            sym_->Enter(name, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
-    }
-    for (int i = 0; i < members->NumElements(); i++) {
-        members->Nth(i)->Check();
     }
 
     return;
@@ -184,20 +200,21 @@ void FnDecl::SetFunctionBody(Stmt *b)
 
 void FnDecl::DoCheck(void)
 {
+    returnType->Check();
+
+    // (1) Conflicting declaration check
     for (int i = 0; i < formals->NumElements(); i++) {
         Decl *newdec = formals->Nth(i);
-        char *id = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(id);
+        char *name = newdec->get_id()->get_name();
+        Decl *olddec = sym_->Lookup(name);
+        newdec->Check();
         if (olddec == NULL) {
-            sym_->Enter(id, newdec);
+            sym_->Enter(name, newdec);
         } else {
             ReportError::DeclConflict(newdec, olddec);
         }
     }
-    returnType->Check();
-    for (int i = 0; i < formals->NumElements(); i++) {
-        formals->Nth(i)->Check();
-    }
+
     if (body != NULL) {
         body->Check();
     }
