@@ -28,7 +28,7 @@ class Expr;
 class Program : public Node
 {
     private:
-        Hashtable<Decl*> *sym_;
+        Hashtable<Decl*> *sym_; // A program has a symbol table
 
     protected:
         List<Decl*> *decls;

@@ -34,6 +34,8 @@ void Program::DoCheck(void)
     return;
 }
 
+/* The program maintains the symbol tables that contains all the class and interface declarations */
+// Return the class definitions
 ClassDecl *Program::GetClass(NamedType *t)
 {
     Decl *dec = sym_->Lookup(t->get_id()->get_name());

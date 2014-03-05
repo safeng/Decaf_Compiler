@@ -14,7 +14,7 @@
  *
  * Parent: Each node has a pointer to its parent. For a Program node,
  * the parent is NULL, for all other nodes it is the pointer to the
- * node one level up in the parse tree.  The parent is not set in the
+ * node one level up in the parse tree. The parent is not set in the
  * constructor (during a bottom-up parse we don't know the parent at
  * the time of construction) but instead we wait until assigning the
  * children into the parent node and then set up links in both direc-

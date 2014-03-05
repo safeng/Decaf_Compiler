@@ -17,6 +17,7 @@
 #include "ast.h"
 #include "list.h"
 
+/* built-in types */
 class Type : public Node
 {
     protected:
@@ -39,6 +40,7 @@ class Type : public Node
         virtual bool IsEquivalentTo(Type *other);
 };
 
+/* Type for classes and interfacess */
 class NamedType : public Type
 {
     protected:

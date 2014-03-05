@@ -50,13 +50,18 @@ Type *VarDecl::get_type(void)
 void ClassDecl::DoCheck(void)
 {
     if (extends != NULL) {
-        extends->Check();
-        *sym_ = *GetClass(extends)->sym_;
+		//extends->Check(); // PROBLEM:: we know we need class. Duplicate code
+		ClassDecl * baseClassDecl = GetClass(extends);
+		if(baseClassDecl == NULL)
+			ReportError::IdentifierNotDeclared(extends->get_id(), LookingForClass);
+		else
+			*sym_ = *baseClassDecl->sym_; // copy symbol table of base class
     }
+
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *newdec = members->Nth(i);
         char *id = newdec->get_id()->get_name();
-        Decl *olddec = sym_->Lookup(id);
+        Decl *olddec = sym_->Lookup(id); // class has symbol table containing all functions and members
         if (olddec == NULL) {
             sym_->Enter(id, newdec);
         } else {
@@ -64,10 +69,9 @@ void ClassDecl::DoCheck(void)
         }
     }
 
-    // TODO: Do implementation completion check
     for (int i = 0; i < implements->NumElements(); i++)
     {
-        InterfaceDecl *intd = parent->GetInterface(implements->Nth(i));
+        InterfaceDecl *intd = parent->GetInterface(implements->Nth(i)); // find interface from the scope of the program
         if (intd == NULL) {
             ReportError::IdentifierNotDeclared(implements->Nth(i)->get_id(), LookingForInterface);
         } else {
@@ -76,7 +80,8 @@ void ClassDecl::DoCheck(void)
             Decl* decl = NULL;
             while((decl = iter.GetNextValue()))
             {
-                Decl * extDecl = sym_->Lookup(decl->get_id()->get_name());
+				// PROBLEM:: Should look up only function declarations
+                FnDecl * extDecl = GetMemberFn(decl->get_id()->get_name());
                 if(extDecl == NULL)
                 {
                     ReportError::InterfaceNotImplemented(this, implements->Nth(i));	
