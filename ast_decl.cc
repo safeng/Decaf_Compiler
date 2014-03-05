@@ -99,25 +99,25 @@ void ClassDecl::DoCheck(void)
         members->Nth(i)->Check();
     }
 
+    // (3) Incomplete implementation check
     for (int i = 0; i < implements->NumElements(); i++)
     {
-        InterfaceDecl *intd = parent->GetInterface(implements->Nth(i)); // find interface from the scope of the program
+        NamedType *nt = implements->Nth(i);
+        InterfaceDecl *intd = parent->GetInterface(nt);
         if (intd == NULL) {
-            ReportError::IdentifierNotDeclared(implements->Nth(i)->get_id(), LookingForInterface);
+            ReportError::IdentifierNotDeclared(nt->get_id(),
+                                               LookingForInterface);
         } else {
             Hashtable<Decl*> *sym_impl = intd->get_sym_table();
-            Iterator<Decl*> iter = sym_impl->GetIterator();	
-            Decl* decl = NULL;
-            while((decl = iter.GetNextValue()))
-            {
-                // PROBLEM:: Should look up only function declarations
-                FnDecl * extDecl = GetMemberFn(decl->get_id()->get_name());
-                if(extDecl == NULL)
-                {
-                    ReportError::InterfaceNotImplemented(this, implements->Nth(i));	
+            Iterator<Decl*> iter = sym_impl->GetIterator();
+            Decl *decl = iter.GetNextValue();
+            while (decl != NULL) {
+                char *name = decl->get_id()->get_name();
+                FnDecl *extDecl = GetMemberFn(name);
+                if (extDecl == NULL) {
+                    ReportError::InterfaceNotImplemented(this, nt);
                     break;
-                }else
-                {
+                } else {
                     // TODO: type checking
                 }
             }
