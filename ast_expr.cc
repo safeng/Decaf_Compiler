@@ -1,13 +1,12 @@
-/* File: ast_expr.cc
- * -----------------
- * Implementation of expression node classes.
- */
+/**** ast_expr.cc - ASTs of expressions ******************************/
+
 #include "ast_expr.h"
 #include "ast_type.h"
 #include "ast_decl.h"
 #include <string.h>
 #include "errors.h"
 
+/*** class Expr ******************************************************/
 
 Expr::Expr(yyltype loc) : Stmt(loc)
 {
@@ -28,51 +27,49 @@ Type *Expr::type(void)
     return type_;
 }
 
-void Expr::set_type(Type *t)
-{
-    type_ = t;
-
-    return;
-}
-
+/*** class IntConstant ***********************************************/
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc)
 {
-    value = val;
-    type_ = Type::intType;
+    value_ = val;
+    type_  = Type::intType;
 
     return;
 }
 
+/*** class DoubleConstant ********************************************/
 
 DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc)
 {
-    value = val;
-    type_ = Type::doubleType;
+    value_ = val;
+    type_  = Type::doubleType;
 
     return;
 }
 
+/*** class BoolConstant **********************************************/
 
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc)
 {
-    value = val;
-    type_ = Type::boolType;
+    value_ = val;
+    type_  = Type::boolType;
 
     return;
 }
 
+/*** class StringConstant ********************************************/
 
 StringConstant::StringConstant(yyltype loc, const char *val) :
     Expr(loc)
 {
     Assert(val != NULL);
-    value = strdup(val);
-    type_ = Type::stringType;
+    value_ = strdup(val);
+    type_  = Type::stringType;
 
     return;
 }
 
+/*** class NullConstant **********************************************/
 
 NullConstant::NullConstant(yyltype loc) : Expr(loc)
 {
@@ -81,66 +78,154 @@ NullConstant::NullConstant(yyltype loc) : Expr(loc)
     return;
 }
 
+/*** class Operator **************************************************/
 
-Operator::Operator(yyltype loc, const char *tok) : Node(loc)
+Operator::Operator(yyltype loc, const char *lexeme) : Node(loc)
 {
     Assert(tok != NULL);
-    strncpy(tokenString, tok, sizeof(tokenString));
+    strncpy(lexeme_, tok, sizeof(lexeme_));
 
     return;
 }
 
 std::ostream& operator<<(std::ostream& out, Operator *o)
 {
-    return out << o->tokenString;
+    return out << o->lexeme_;
 }
 
+/*** class CompoundExpr **********************************************/
 
-CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r) :
-    Expr(Join(l->GetLocation(), r->GetLocation()))
+void CompoundExpr::OperandCheck(void)
 {
-    Assert(l != NULL && o != NULL && r != NULL);
-    (op=o)->SetParent(this);
-    (left=l)->SetParent(this);
-    (right=r)->SetParent(this);
-
-    return;
-}
-
-CompoundExpr::CompoundExpr(Operator *o, Expr *r) :
-    Expr(Join(o->GetLocation(), r->GetLocation()))
-{
-    Assert(o != NULL && r != NULL);
-    left = NULL;
-    (op=o)->SetParent(this);
-    (right=r)->SetParent(this);
-
-    return;
-}
-
-void CompoundExpr::DoCheck(void)
-{
-    if (left != NULL) {
-        left->Check();
+    if (left_ != NULL) {
+        left_->Check();
     }
-    right->Check();
+    right_->Check();
 
     return;
 }
 
+CompoundExpr::CompoundExpr(Expr *lhs, Operator *op, Expr *rhs) :
+    Expr(Join(lhs->GetLocation(), rhs->GetLocation()))
+{
+    Assert(lhs != NULL && op != NULL && rhs != NULL);
+    (op_ = op)->SetParent(this);
+    (left_ = lhs)->SetParent(this);
+    (right_ = rhs)->SetParent(this);
+
+    return;
+}
+
+CompoundExpr::CompoundExpr(Operator *op, Expr *rhs) :
+    Expr(Join(o->GetLocation(), rhs->GetLocation()))
+{
+    Assert(op != NULL && rhs != NULL);
+    left_ = NULL;
+    (op_ = op)->SetParent(this);
+    (right_ = rhs)->SetParent(this);
+
+    return;
+}
+
+/*** class ArithmeticExpr ********************************************/
+
+void ArithmeticExpr::DoCheck(void)
+{
+    OperandCheck();
+    if (left_ == NULL) {
+        if (right_->type() == Type::intType ||
+            right_->type() == Type::doubleType ||
+            right_->type() == Type::errorType) {
+            type_ = right_->type();
+        } else {
+            ReportError::IncompatibleOperand(op_, right_->type());
+            type_ = Type::errorType;
+        }
+    } else {
+        if (left_->type() == Type::errorType ||
+            right_->type() == Type::errorType) {
+            type_ = Type:errorType;
+        } else if (left_->type() == right_->type() &&
+                   (left_->type() == Type::intType ||
+                    left_->type() == Type::doubleType)) {
+                type_ = left_->type();
+        } else {
+            ReportError::IncompatibleOperand(op_, left_->type(),
+                                             right_->type());
+            type_ = Type::errorType;
+        }
+    }
+
+    return;
+}
 
 ArithmeticExpr::ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) :
-    CompoundExpr(lhs,op,rhs)
+    CompoundExpr(lhs, op, rhs)
 {
     return;
 }
 
 ArithmeticExpr::ArithmeticExpr(Operator *op, Expr *rhs) :
-    CompoundExpr(op,rhs)
+    CompoundExpr(op, rhs)
 {
     return;
 }
 
+/*** class RelationalExpr ********************************************/
+
+void RelationalExpr::DoCheck(void)
+{
+    OperandCheck();
+    if (left_->type() == Type::errorType ||
+        right_->type() == Type::errorType) {
+        type_ = Type:errorType;
+    } else if (left_->type() == right_->type() &&
+               (left_->type() == Type::intType ||
+                left_->type() == Type::doubleType)) {
+        type_ = left_->type();
+    } else {
+        ReportError::IncompatibleOperand(op_, left_->type(),
+                                         right_->type());
+        type_ = Type::errorType;
+    }
+
+    return;
+}
+
+RelationalExpr::RelationalExpr(Expr *lhs, Operator *op, Expr *rhs)
+    : CompoundExpr(lhs, op, rhs)
+{
+    return;
+}
+
+/*** class EqualityExpr ********************************************/
+
+void EqualityExpr::DoCheck(void)
+{
+    OperandCheck();
+    if (left_->type() == Type::errorType ||
+        right_->type() == Type::errorType) {
+        type_ = Type:errorType;
+    } else if (left_->type() == right_->type() &&
+               (left_->type() == Type::intType ||
+                left_->type() == Type::doubleType)) {
+        type_ = left_->type();
+    } else {
+        ReportError::IncompatibleOperand(op_, left_->type(),
+                                         right_->type());
+        type_ = Type::errorType;
+    }
+
+    return;
+}
+
+EqualityExpr::EqualityExpr(Expr *lhs, Operator *op, Expr *rhs)
+    : CompoundExpr(lhs, op, rhs)
+{
+    return;
+}
+
+/*** class This ******************************************************/
 
 void This::DoCheck(void)
 {
@@ -155,6 +240,7 @@ void This::DoCheck(void)
     return;
 }
 
+/*** class ArrayAccess ***********************************************/
 
 void ArrayAccess::DoCheck(void)
 {

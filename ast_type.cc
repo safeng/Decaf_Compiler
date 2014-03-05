@@ -1,7 +1,4 @@
-/* File: ast_type.cc
- * -----------------
- * Implementation of type node classes.
- */
+/**** ast_type.cc - ASTs for types ***********************************/
 
 #include <string.h>
 
@@ -9,13 +6,7 @@
 #include "ast_decl.h"
 #include "errors.h"
 
-/* Class constants
- * ---------------
- * These are public constants for the built-in base types (int, double,
- * etc.) They can be accessed with the syntax Type::intType. This
- * allows you to directly access them and share the built-in types
- * where needed rather that creates lots of copies.
- */
+/*** class Type ******************************************************/
 
 Type *Type::intType    = new Type("int");
 Type *Type::doubleType = new Type("double");
@@ -25,9 +16,10 @@ Type *Type::nullType   = new Type("null");
 Type *Type::stringType = new Type("string");
 Type *Type::errorType  = new Type("error");
 
-Type::Type(const char *n) {
+Type::Type(const char *n)
+{
     Assert(n);
-    typeName = strdup(n);
+    name_ = strdup(n);
 
     return;
 }
@@ -37,61 +29,68 @@ Type::Type(yyltype loc) : Node(loc)
     return;
 }
 
-void Type::PrintToStream(std::ostream& out)
+char *Type::name(void)
 {
-    out << typeName;
-
-    return;
+    return name_;
 }
 
 std::ostream& operator<<(std::ostream& out, Type *t)
 {
-    t->PrintToStream(out);
+    out << name_;
 
     return out;
 }
 
 bool Type::IsEquivalentTo(Type *other)
 {
-    return this == other;
+    bool result;
+
+    if (strcmp(name_, other->name()) == 0) {
+        result = true;
+    } else {
+        result = false;
+    }
+
+    return result;
 }
+
+/*** class NamedType *************************************************/
 
 void NamedType::DoCheck(void)
 {
-	// Looking for type 
     if (GetClass(this) == NULL) {
-        ReportError::IdentifierNotDeclared(id, LookingForType);
+        ReportError::IdentifierNotDeclared(id_, LookingForType);
     }
 
     return;
 }
 
-NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
+NamedType::NamedType(Identifier *i) : Type(*i->location())
+{
     Assert(i != NULL);
-    (id=i)->SetParent(this);
-}
-
-Identifier *NamedType::get_id(void)
-{
-    return id;
-}
-
-void NamedType::PrintToStream(std::ostream& out)
-{
-    out << id;
+    (id_ = i)->SetParent(this);
+    name_ = id_->name();
 
     return;
 }
 
-
-ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
-    Assert(et != NULL);
-    (elemType=et)->SetParent(this);
+Identifier *NamedType::id(void)
+{
+    return id_;
 }
 
-void ArrayType::PrintToStream(std::ostream& out)
+/*** class ArrayType *************************************************/
+
+ArrayType::ArrayType(yyltype loc, Type *t) : Type(loc)
 {
-    out << elemType << "[]";
+    Assert(t != NULL);
+    (elem_ = t)->SetParent(this);
+    name_ = strdup(elem_->name());
+    realloc(name_, strlen(name_) + 3);
+    if (name_ == NULL) {
+        exit(137);
+    }
+    strcat(name_, "[]");
 
     return;
 }

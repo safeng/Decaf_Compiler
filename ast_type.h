@@ -1,13 +1,4 @@
-/* File: ast_type.h
- * ----------------
- * In our parse tree, Type nodes are used to represent and
- * store type information. The base Type class is used
- * for built-in types, the NamedType for classes and interfaces,
- * and the ArrayType for arrays of other types.
- *
- * pp3: You will need to extend the Type classes to implement
- * the type system and rules for type equivalency and compatibility.
- */
+/**** ast_type.h - ASTs for types ************************************/
 
 #ifndef _H_ast_type
 #define _H_ast_type
@@ -17,13 +8,13 @@
 #include "ast.h"
 #include "list.h"
 
-/* built-in types */
 class Type : public Node
 {
     protected:
-        char *typeName;
+        char *name_;
 
     public :
+        // Static built-in types
         static Type *intType;
         static Type *doubleType;
         static Type *boolType;
@@ -35,8 +26,10 @@ class Type : public Node
         Type(const char *str);
         Type(yyltype loc);
 
-        virtual void PrintToStream(std::ostream& out);
+        char *name(void);
+
         friend std::ostream& operator<<(std::ostream& out, Type *t);
+
         virtual bool IsEquivalentTo(Type *other);
 };
 
@@ -44,25 +37,22 @@ class Type : public Node
 class NamedType : public Type
 {
     protected:
-        Identifier *id;
+        Identifier *id_;
         void DoCheck(void);
 
     public:
         NamedType(Identifier *i);
-        Identifier *get_id(void);
 
-        void PrintToStream(std::ostream& out);
+        Identifier *id(void);
 };
 
 class ArrayType : public Type
 {
     protected:
-        Type *elemType;
+        Type *elem_;
 
     public:
-        ArrayType(yyltype loc, Type *elemType);
-
-        void PrintToStream(std::ostream& out);
+        ArrayType(yyltype loc, Type *t);
 };
 
 #endif

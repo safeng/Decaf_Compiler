@@ -30,7 +30,6 @@ class Expr : public Stmt
         Expr(yyltype loc);
         Expr(void);
         Type *type(void);
-        void set_type(Type *t);
 };
 
 /* This node type is used for those places where an expression is op-
@@ -46,7 +45,7 @@ class EmptyExpr : public Expr
 class IntConstant : public Expr
 {
     protected:
-        int value;
+        int value_;
 
     public:
         IntConstant(yyltype loc, int val);
@@ -55,7 +54,7 @@ class IntConstant : public Expr
 class DoubleConstant : public Expr
 {
     protected:
-        double value;
+        double value_;
 
     public:
         DoubleConstant(yyltype loc, double val);
@@ -64,7 +63,7 @@ class DoubleConstant : public Expr
 class BoolConstant : public Expr
 {
     protected:
-        bool value;
+        bool value_;
 
     public:
         BoolConstant(yyltype loc, bool val);
@@ -73,7 +72,7 @@ class BoolConstant : public Expr
 class StringConstant : public Expr
 {
     protected:
-        char *value;
+        char *value_;
 
     public:
         StringConstant(yyltype loc, const char *val);
@@ -88,10 +87,10 @@ class NullConstant: public Expr
 class Operator : public Node
 {
     protected:
-        char tokenString[4];
+        char lexeme_[4];
 
     public:
-        Operator(yyltype loc, const char *tok);
+        Operator(yyltype loc, const char *lexeme);
         friend std::ostream& operator<<(std::ostream& out,
                                         Operator *o);
 };
@@ -99,9 +98,9 @@ class Operator : public Node
 class CompoundExpr : public Expr
 {
     protected:
-        Operator *op;
-        Expr *left, *right; // left will be NULL if unary
-        void DoCheck(void);
+        Operator *op_;
+        Expr *left_, *right_;
+        void OperandCheck(void);
 
     public:
         CompoundExpr(Expr *lhs, Operator *op, Expr *rhs);
@@ -110,6 +109,9 @@ class CompoundExpr : public Expr
 
 class ArithmeticExpr : public CompoundExpr
 {
+    protected:
+        void DoCheck(void);
+
     public:
         ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs);
         ArithmeticExpr(Operator *op, Expr *rhs);
@@ -117,8 +119,11 @@ class ArithmeticExpr : public CompoundExpr
 
 class RelationalExpr : public CompoundExpr
 {
+    protected:
+        void DoCheck(void);
+
     public:
-        RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
+        RelationalExpr(Expr *lhs, Operator *op, Expr *rhs);
 };
 
 class EqualityExpr : public CompoundExpr

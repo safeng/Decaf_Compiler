@@ -1,8 +1,4 @@
-/**** ast.cc - AST base class and common ASTs *************************
- *
- * Copyright © 2014 Shuang Feng, Hongjiu Zhang
- *
- * All rights reserved.                                              */
+/**** ast.cc - AST base class and common ASTs ************************/
 
 #include "ast.h"
 #include "ast_type.h"
@@ -14,8 +10,8 @@
 
 Node::Node(yyltype loc)
 {
-    location = new yyltype(loc);
-    parent = NULL;
+    location_ = new yyltype(loc);
+    parent_ = NULL;
     checked_ = false;
 
     return;
@@ -23,28 +19,28 @@ Node::Node(yyltype loc)
 
 Node::Node(void)
 {
-    location = NULL;
-    parent = NULL;
+    location_ = NULL;
+    parent_ = NULL;
     checked_ = false;
 
     return;
 }
 
-yyltype *Node::GetLocation(void)
+yyltype *Node::location(void)
 {
-    return location;
+    return location_;
 }
 
-void Node::SetParent(Node *p)
+void Node::set_parent(Node *p)
 {
-    parent = p;
+    parent_ = p;
 
     return;
 }
 
-Node *Node::GetParent(void)
+Node *Node::parent(void)
 {
-    return parent;
+    return parent_;
 }
 
 void Node::DoCheck(void)
@@ -123,19 +119,19 @@ VarDecl *Node::GetVar(Identifier *id)
 
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc)
 {
-    name = strdup(n);
+    name_ = strdup(n);
 
     return;
 }
 
-char *Identifier::get_name(void)
+char *Identifier::name(void)
 {
-    return name;
+    return name_;
 }
 
 std::ostream& operator<<(std::ostream& out, Identifier *id)
 {
-    return out << id->name;
+    return out << id->name_;
 }
 
 /*** class Error ******************************************************/
