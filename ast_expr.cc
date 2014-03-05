@@ -370,7 +370,7 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 void FieldAccess::DoCheck(void)
 {
-	type_ = Type::errorType; // default: set as error type
+    type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
         VarDecl *v = GetVar(field);
         if (v == NULL) {
@@ -385,19 +385,20 @@ void FieldAccess::DoCheck(void)
             base->Check(); // check base
             ReportError::InaccessibleField(field, base->type());
         } else {
-			// Even with this.field, we should check whether we are in a class scope
-			th->Check();
+            // Even with this.field, we should check whether we are in a class scope
+            th->Check();
             ClassDecl *c = GetCurrentClass();
-			if(c != NULL)
-			{
-				//NamedType *t = new NamedType(c->get_id());
-				VarDecl *v = c->GetMemberVar(field->get_name());
-				if (v == NULL) {
-					ReportError::FieldNotFoundInBase(field, base->type());
-				} else {
-					type_ = v->get_type();
-				}
-			}
+            if (c != NULL)
+            {
+                //NamedType *t = new NamedType(c->get_id());
+                VarDecl *v = c->GetMemberVar(field->get_name());
+                if (v == NULL) {
+                    ReportError::FieldNotFoundInBase(field,
+                                                     base->type());
+                } else {
+                    type_ = v->get_type();
+                }
+            }
         }
     }
 
@@ -419,6 +420,7 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 
 void Call::DoCheck(void)
 {
+    type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
         FnDecl *f = GetFn(field);
         if (f == NULL) {
@@ -427,24 +429,16 @@ void Call::DoCheck(void)
         } else {
             type_ = f->get_return_type();
         }
-    } else {
-        This *th = dynamic_cast<This*>(base);
-        if (th == NULL) {
-            Type *t;
-            NamedType *nt;
-            base->Check();
-            t = base->type();
-            nt = dynamic_cast<NamedType*>(t);
-            if (nt == NULL) {
-                if (t != NULL) {
+    } else { // must be this.field
+        base->Check();
+        if (base->type() != errorType) {
+            if (dynamic_cast<This*>(base) == NULL) {
+                NamedType *nt = dynamic_cast<NamedType*>(base->type());
+                if (nt == NULL) {
                     ReportError::FieldNotFoundInBase(field, t);
-                }
-            } else {
-                ClassDecl *c = GetClass(nt);
-                FnDecl *f;
-                if (c != NULL) {
-                    c->Check();
-                    f = c->GetMemberFn(field->get_name());
+                } else {
+                    ClassDecl *c = GetClass(nt);
+                    FnDecl *f = c->GetMemberFn(field->name());
                     if (f == NULL) {
                         ReportError::FieldNotFoundInBase
                             (field, base->type());
@@ -452,18 +446,19 @@ void Call::DoCheck(void)
                         type_ = f->get_return_type();
                     }
                 }
-            }
-        } else {
-            ClassDecl *c = GetCurrentClass();
-            NamedType *t = new NamedType(c->get_id());
-            FnDecl *f = c->GetMemberFn(field->get_name());
-            if (f == NULL) {
-                ReportError::FieldNotFoundInBase(field, t);
             } else {
-                type_ = f->get_return_type();
+                ClassDecl *c = GetCurrentClass();
+                FnDecl *f = c->GetMemberFn(field->name());
+                if (f == NULL) {
+                    ReportError::FieldNotFoundInBase(field,
+                                                     base->type());
+                } else {
+                    type_ = f->get_return_type();
+                }
             }
         }
     }
+
     for (int i = 0; i < actuals->NumElements(); i++) {
         actuals->Nth(i)->Check();
     }
