@@ -76,7 +76,6 @@ void ClassDecl::DoCheck(void)
         Decl *newdecl = members->Nth(i);
         char *name = newdecl->get_id()->get_name();
         Decl *olddecl = sym_table_->Lookup(name);
-        newdecl->Check();
         if (olddecl == NULL) {
             sym_table_->Enter(name, newdecl);
         } else {
@@ -92,6 +91,12 @@ void ClassDecl::DoCheck(void)
             base->Check();
             MergeSymbolTable(base);
         }
+    }
+
+    // Check should always follow construction of the symbol table,
+    // otherwise any forward declaration will fail.
+    for (int i = 0; i < members->NumElements(); i++) {
+        members->Nth(i)->Check();
     }
 
     for (int i = 0; i < implements->NumElements(); i++)
@@ -165,12 +170,17 @@ void InterfaceDecl::DoCheck(void)
         Decl *newdecl = members_->Nth(i);
         char *name = newdecl->get_id()->get_name();
         Decl *olddecl = sym_table_->Lookup(name);
-        newdecl->Check();
         if (olddecl == NULL) {
             sym_table_->Enter(name, newdecl);
         } else {
             ReportError::DeclConflict(newdecl, olddecl);
         }
+    }
+
+    // Check should always follow construction of the symbol table,
+    // otherwise any forward declaration will fail.
+    for (int i = 0; i < members_->NumElements(); i++) {
+        members_->Nth(i)->Check();
     }
 
     return;
@@ -201,12 +211,17 @@ void FnDecl::DoCheck(void)
         Decl *newdecl = formals_->Nth(i);
         char *name = newdecl->get_id()->get_name();
         Decl *olddecl = sym_table_->Lookup(name);
-        newdecl->Check();
         if (olddecl == NULL) {
             sym_table_->Enter(name, newdecl);
         } else {
             ReportError::DeclConflict(newdecl, olddecl);
         }
+    }
+
+    // Check should always follow construction of the symbol table,
+    // otherwise any forward declaration will fail.
+    for (int i = 0; i < formals_->NumElements(); i++) {
+        formals_->Nth(i)->Check();
     }
 
     if (body_ != NULL) {
