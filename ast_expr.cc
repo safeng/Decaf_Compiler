@@ -422,7 +422,7 @@ void Call::DoCheck(void)
 {
     type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
-		// Ommit this or call a global function
+		// Omit this or call a global function
         FnDecl *f = GetFn(field);
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
@@ -430,13 +430,14 @@ void Call::DoCheck(void)
         } else {
             type_ = f->get_return_type();
         }
-    } else { this.field(args) or var.field(args)
+    } else {
         base->Check();
-        if (base->type() != errorType) {
-            if (dynamic_cast<This*>(base) == NULL) {
+        if (base->type() != Type::errorType) {
+            if (dynamic_cast<This*>(base) == NULL) // var.func()
+			{
                 NamedType *nt = dynamic_cast<NamedType*>(base->type());
                 if (nt == NULL) {
-                    ReportError::FieldNotFoundInBase(field, t);
+                    ReportError::FieldNotFoundInBase(field, base->type());
                 } else {
                     ClassDecl *c = GetClass(nt);
                     FnDecl *f = c->GetMemberFn(field->name());
@@ -447,8 +448,9 @@ void Call::DoCheck(void)
                         type_ = f->get_return_type();
                     }
                 }
-            } else {
-                ClassDecl *c = GetCurrentClass();
+            } else // this.func()
+			{
+                ClassDecl *c = GetCurrentClass(); // must exist
                 FnDecl *f = c->GetMemberFn(field->name());
                 if (f == NULL) {
                     ReportError::FieldNotFoundInBase(field,
