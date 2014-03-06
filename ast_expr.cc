@@ -334,11 +334,12 @@ void ArrayAccess::DoCheck(void)
             ReportError::BracketsOnNonArray(base_);
             type_ = Type::errorType;
         }
-        if (subscript_->type() == Type::intType) {
+        if (subscript_->type() != Type::intType) {
             ReportError::SubscriptNotInteger(subscript_);
             type_ = Type::errorType;
         }
     }
+	// Assign the type of base to whole expression
     if (type_ == NULL) {
         type_ = base_->type()->elem();
     }
@@ -405,7 +406,6 @@ void FieldAccess::DoCheck(void)
     return;
 }
 
-
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
     Expr(loc)
 {
@@ -422,6 +422,7 @@ void Call::DoCheck(void)
 {
     type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
+		// Ommit this or call a global function
         FnDecl *f = GetFn(field);
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
@@ -429,7 +430,7 @@ void Call::DoCheck(void)
         } else {
             type_ = f->get_return_type();
         }
-    } else { // must be this.field
+    } else { this.field(args) or var.field(args)
         base->Check();
         if (base->type() != errorType) {
             if (dynamic_cast<This*>(base) == NULL) {

@@ -159,7 +159,7 @@ ClassDecl *ClassDecl::GetCurrentClass(void)
 
 VarDecl *ClassDecl::GetVar(Identifier *id)
 {
-	return GetMemberVar(id->get_name());
+	return GetMemberVar(id->name());
 }
 
 VarDecl *ClassDecl::GetMemberVar(char *name)
@@ -172,6 +172,10 @@ FnDecl *ClassDecl::GetMemberFn(char *name)
     return dynamic_cast<FnDecl*>(sym_table_->Lookup(name));
 }
 
+FnDecl *ClassDecl::GetFn(Identifier *id)
+{
+	return GetMemberFn(id->name());
+}
 
 void InterfaceDecl::DoCheck(void)
 {

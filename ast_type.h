@@ -49,7 +49,7 @@ class NamedType : public Type
 class ArrayType : public Type
 {
     protected:
-        Type *elem_;
+        Type *elem_; // ArrayType has a Type associated with it
 
     public:
         ArrayType(yyltype loc, Type *t);

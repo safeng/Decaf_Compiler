@@ -41,7 +41,7 @@ class EmptyExpr : public Expr
 {
     public:
 };
-
+/* Assign type to constant */
 class IntConstant : public Expr
 {
     protected:

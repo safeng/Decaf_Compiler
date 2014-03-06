@@ -65,6 +65,7 @@ class ClassDecl : public Decl
         FnDecl *GetMemberFn(char *name);
 
 		VarDecl *GetVar(Identifier *id);
+		FnDecl *GetFn(Identifier *id);
 };
 
 class InterfaceDecl : public Decl
