@@ -152,6 +152,10 @@ void ConditionalStmt::DoCheck(void)
 {
     test->Check();
     body->Check();
+	
+	// testExpr must be boolean type
+	if(test->type() != Type::boolType)
+		ReportError::TestNotBoolean(test);
 
     return;
 }
@@ -180,6 +184,7 @@ void ForStmt::DoCheck(void)
     test->Check();
     step->Check();
     body->Check();
+	ConditionalStmt::DoCheck(); // check non-boolean test expr
 
     return;
 }
@@ -203,7 +208,7 @@ void IfStmt::DoCheck(void)
     if (elseBody != NULL) {
         elseBody->Check();
     }
-
+	ConditionalStmt::DoCheck(); // check non-boolean test expr
     return;
 }
 
