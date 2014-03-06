@@ -90,7 +90,7 @@ ArrayType::ArrayType(yyltype loc, Type *t) : Type(loc)
     if (name_ == NULL) {
         exit(137);
     }
-    strcat(name_, "[]");
+    strcat(name_, "[]"); // construct names
 
     return;
 }

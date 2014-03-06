@@ -81,6 +81,15 @@ Stmt::Stmt(yyltype loc) : Node(loc)
     return;
 }
 
+Stmt *Stmt::GetContextStmt(void)
+{
+	if(dynamic_cast<Stmt*>(parent) == NULL) // no further higher level
+	{
+		return this;
+	}else
+		return parent->GetContextStmt();
+}
+
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s)
 {
     Assert(d != NULL && s != NULL);
@@ -153,6 +162,11 @@ LoopStmt::LoopStmt(Expr *testExpr, Stmt *body) :
     return;
 }
 
+Stmt *LoopStmt::GetContextStmt(void)
+{
+	return this;
+}
+
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b)
 {
     Assert(i != NULL && t != NULL && s != NULL && b != NULL);
@@ -196,6 +210,13 @@ void IfStmt::DoCheck(void)
 BreakStmt::BreakStmt(yyltype loc) : Stmt(loc)
 {
     return;
+}
+
+void BreakStmt::DoCheck(void)
+{
+	Stmt *cnt = GetContextStmt();
+	if(dynamic_cast<LoopStmt*>(cnt) == NULL) // not a loop stmt
+		ReportError::BreakOutsideLoop(this);
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc)

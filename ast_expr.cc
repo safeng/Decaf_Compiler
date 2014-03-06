@@ -478,6 +478,7 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc)
     return;
 }
 
+
 void NewExpr::DoCheck(void)
 {
     if (GetClass(cType) == NULL) {

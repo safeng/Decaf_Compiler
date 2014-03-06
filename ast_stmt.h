@@ -45,6 +45,8 @@ class Program : public Node
 
 class Stmt : public Node
 {
+	protected:
+		virtual Stmt *GetContextStmt(void); // Get context of stmt of interest
     public:
         Stmt(void);
         Stmt(yyltype loc);
@@ -72,7 +74,7 @@ class ConditionalStmt : public Stmt
     protected:
         Expr *test;
         Stmt *body;
-        void DoCheck(void);
+        void DoCheck(void); // test testExpr is of boolean type
 
     public:
         ConditionalStmt(Expr *testExpr, Stmt *body);
@@ -80,6 +82,9 @@ class ConditionalStmt : public Stmt
 
 class LoopStmt : public ConditionalStmt
 {
+	protected:
+		Stmt *GetContextStmt(void); // Return LoopStmt
+
     public:
         LoopStmt(Expr *testExpr, Stmt *body);
 };
@@ -114,6 +119,9 @@ class IfStmt : public ConditionalStmt
 
 class BreakStmt : public Stmt
 {
+	protected:
+		void DoCheck(void); // break stmt can only appear within while or for loop
+
     public:
         BreakStmt(yyltype loc);
 };
