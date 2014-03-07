@@ -261,6 +261,19 @@ void PrintStmt::DoCheck(void)
     for (int i = 0; i < args->NumElements(); i++) {
         args->Nth(i)->Check();
     }
+	
+	// type checking. Print can only print string, int or bool
+	for(int i = 0; i < args->NumElements(); i++)
+	{
+		Expr * arg = args->Nth(i);	
+		Type * argType = arg->type();
+		if(!argType->IsEquivalentTo(Type::stringType) && 
+				!argType->IsEquivalentTo(Type::intType) &&
+				!argType->IsEquivalentTo(Type::boolType))
+		{
+			ReportError::PrintArgMismatch(arg, i, argType);
+		}
+	}
 
     return;
 }
