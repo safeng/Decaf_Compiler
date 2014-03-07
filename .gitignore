@@ -1,11 +1,9 @@
 <<<<<<< HEAD
 ##*** .gitignore - Untracking file list for Git ***********************
 ##
-## This file are not ready for public access. If you are not the in-
-## tended addressee and have received the file, please notify Hongjiu
-## Zhang <nocte107@nocte107.name>. Please delete the file from your
-## system, and do not disclose, copy, distributing or take any action
-## in reliance on the contents of this file. Thank you for your help!
+## Copyright © 2014 Shuang Feng and Hongjiu Zhang
+##
+## All rights reserved
 ##
 
 ##** Global ***********************************************************
@@ -17,6 +15,7 @@
 Session.vim
 .netrwhist
 *~
+<<<<<<< HEAD
 =======
 # Compiled Object files
 *.slo
@@ -32,3 +31,17 @@ Session.vim
 *.la
 *.a
 >>>>>>> 2ffc5388f2d3643e2b5bd915de323e7fe80343d8
+=======
+
+## C/C++
+*.o
+
+## Flex and Yacc
+lex.yy.c
+y.output
+y.tab.c
+y.tab.h
+
+## Executable
+dcc
+>>>>>>> add/scope

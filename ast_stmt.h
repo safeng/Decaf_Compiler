@@ -3,7 +3,7 @@
  * The Stmt class and its subclasses are used to represent
  * statements in the parse tree.  For each statment in the
  * language (for, if, return, etc.) there is a corresponding
- * node class for that construct. 
+ * node class for that construct.
  *
  * pp3: You will need to extend the Stmt classes to implement
  * semantic analysis for rules pertaining to statements.
@@ -15,103 +15,137 @@
 
 #include "list.h"
 #include "ast.h"
+#include "hashtable.h"
 
 class Decl;
+class FnDecl;
 class VarDecl;
+class ClassDecl;
+class InterfaceDecl;
+class NamedType;
 class Expr;
-  
+
 class Program : public Node
 {
-  protected:
-     List<Decl*> *decls;
-     
-  public:
-     Program(List<Decl*> *declList);
-     void Check();
+    private:
+        Hashtable<Decl*> *sym_table_;
+
+    protected:
+        List<Decl*> *decls_;
+        void DoCheck(void);
+
+    public:
+        Program(List<Decl*> *decls);
+
+        ClassDecl *GetClass(NamedType *t);
+        FnDecl *GetFn(Identifier *id);
+        VarDecl *GetVar(Identifier *id);
+        InterfaceDecl *GetInterface(NamedType *t);
 };
 
 class Stmt : public Node
 {
-  public:
-     Stmt() : Node() {}
-     Stmt(yyltype loc) : Node(loc) {}
+	protected:
+		virtual Stmt *GetContextStmt(void); // Get context of stmt of interest
+    public:
+        Stmt(void);
+        Stmt(yyltype loc);
 };
 
-class StmtBlock : public Stmt 
+class StmtBlock : public Stmt
 {
-  protected:
-    List<VarDecl*> *decls;
-    List<Stmt*> *stmts;
-    
-  public:
-    StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
+    private:
+        Hashtable<Decl*> *sym_;
+
+    protected:
+        List<VarDecl*> *decls;
+        List<Stmt*> *stmts;
+        void DoCheck(void);
+
+    public:
+        StmtBlock(List<VarDecl*> *variableDeclarations,
+                  List<Stmt*> *statements);
+
+        VarDecl *GetVar(Identifier *id);
 };
 
-  
 class ConditionalStmt : public Stmt
 {
-  protected:
-    Expr *test;
-    Stmt *body;
-  
-  public:
-    ConditionalStmt(Expr *testExpr, Stmt *body);
+    protected:
+        Expr *test;
+        Stmt *body;
+        void DoCheck(void); // test testExpr is of boolean type
+
+    public:
+        ConditionalStmt(Expr *testExpr, Stmt *body);
 };
 
-class LoopStmt : public ConditionalStmt 
+class LoopStmt : public ConditionalStmt
 {
-  public:
-    LoopStmt(Expr *testExpr, Stmt *body)
-            : ConditionalStmt(testExpr, body) {}
+	protected:
+		Stmt *GetContextStmt(void); // Return LoopStmt
+
+    public:
+        LoopStmt(Expr *testExpr, Stmt *body);
 };
 
-class ForStmt : public LoopStmt 
+class ForStmt : public LoopStmt
 {
-  protected:
-    Expr *init, *step;
-  
-  public:
-    ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
+    protected:
+        Expr *init, *step;
+        void DoCheck(void);
+
+    public:
+        ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
 };
 
-class WhileStmt : public LoopStmt 
+class WhileStmt : public LoopStmt
 {
-  public:
-    WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
+    public:
+        WhileStmt(Expr *test, Stmt *body);
 };
 
-class IfStmt : public ConditionalStmt 
+class IfStmt : public ConditionalStmt
 {
-  protected:
-    Stmt *elseBody;
-  
-  public:
-    IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
+    protected:
+        void DoCheck(void);
+
+    protected:
+        Stmt *elseBody;
+
+    public:
+        IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
 };
 
-class BreakStmt : public Stmt 
+class BreakStmt : public Stmt
 {
-  public:
-    BreakStmt(yyltype loc) : Stmt(loc) {}
+	protected:
+		void DoCheck(void); // break stmt can only appear within while or for loop
+
+    public:
+        BreakStmt(yyltype loc);
 };
 
-class ReturnStmt : public Stmt  
+class ReturnStmt : public Stmt
 {
-  protected:
-    Expr *expr;
-  
-  public:
-    ReturnStmt(yyltype loc, Expr *expr);
+    protected:
+        void DoCheck(void);
+
+    protected:
+        Expr *expr;
+
+    public:
+        ReturnStmt(yyltype loc, Expr *expr);
 };
 
 class PrintStmt : public Stmt
 {
-  protected:
-    List<Expr*> *args;
-    
-  public:
-    PrintStmt(List<Expr*> *arguments);
-};
+    protected:
+        List<Expr*> *args;
+        void DoCheck(void);
 
+    public:
+        PrintStmt(List<Expr*> *arguments);
+};
 
 #endif
