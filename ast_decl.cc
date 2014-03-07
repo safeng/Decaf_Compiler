@@ -182,7 +182,11 @@ ClassDecl *ClassDecl::GetCurrentClass(void)
 
 VarDecl *ClassDecl::GetVar(Identifier *id)
 {
-	return GetMemberVar(id->name());
+	VarDecl * memVar = GetMemberVar(id->name());
+	if(memVar == NULL)
+		return parent->GetVar(id); // maybe global scope
+	else
+		return memVar;
 }
 
 VarDecl *ClassDecl::GetMemberVar(char *name)
@@ -197,7 +201,11 @@ FnDecl *ClassDecl::GetMemberFn(char *name)
 
 FnDecl *ClassDecl::GetFn(Identifier *id)
 {
-	return GetMemberFn(id->name());
+	FnDecl * memFn = GetMemberFn(id->name());
+	if(memFn == NULL) // global function
+		return parent->GetFn(id);
+	else
+		return memFn;
 }
 
 bool ClassDecl::IsTypeCompatibleWith(NamedType *baseClass)
