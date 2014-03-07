@@ -64,7 +64,20 @@ void ClassDecl::MergeSymbolTable(ClassDecl *base)
                    dynamic_cast<VarDecl*>(d) != NULL) {
 			sym_table_->Enter(name, d); // override with decl in superclass
             ReportError::DeclConflict(nd, d);
-        } // TODO: Type checking for function override.
+        }else // Type checking for function override
+		{
+			FnDecl * fnBase = dynamic_cast<FnDecl*>(d);
+			FnDecl * fnChild = dynamic_cast<FnDecl*>(nd);
+			// self check first then type checking (avoid cascading errors)
+			fnChild->Check(); 
+			// check return type and formals
+			if(!fnChild->IsSigEquivalentTo(fnBase))
+			{
+				ReportError::OverrideMismatch(fnChild);
+				// replace it with definition in superclass
+				sym_table_->Enter(name, d);
+			}
+		}
 
 		d = iter.GetNextValue();
     }
@@ -115,14 +128,24 @@ void ClassDecl::DoCheck(void)
             Hashtable<Decl*> *sym_impl = intd->get_sym_table();
             Iterator<Decl*> iter = sym_impl->GetIterator();
             Decl *decl = iter.GetNextValue();
+			bool hideError = false;
             while (decl != NULL) {
                 char *name = decl->get_id()->get_name();
                 FnDecl *extDecl = GetMemberFn(name);
                 if (extDecl == NULL) {
-                    ReportError::InterfaceNotImplemented(this, nt);
-                    break;
+					if(!hideError)
+					{
+						ReportError::InterfaceNotImplemented(this, nt);
+						hideError = true;
+					}
                 } else {
-                    // TODO: type checking
+					FnDecl * implDecl = dynamic_cast<FnDecl*>(decl);
+					if(!extDecl->IsSigEquivalentTo(implDecl))
+					{
+						ReportError::OverrideMismatch(extDecl);
+						// keep the signiture from Interface
+						sym_table_->Enter(name, decl);
+					}
                 }
 				decl = iter.GetNextValue();
             }
@@ -279,6 +302,11 @@ Type *FnDecl::get_return_type(void)
     return returnType_;
 }
 
+List<VarDecl*> *FnDecl::get_formals(void)
+{
+	return formals_;
+}
+
 void FnDecl::SetFunctionBody(Stmt *b)
 {
     (body_ = b)->SetParent(this);
@@ -300,4 +328,31 @@ VarDecl *FnDecl::GetVar(Identifier *id)
 FnDecl *FnDecl::GetCurrentFn(void)
 {
 	return this;
+}
+
+bool FnDecl::IsSigEquivalentTo(FnDecl *other)
+{
+	// check return type
+	if(returnType_->IsEquivalentTo(other->get_return_type()))
+	{
+		// check formals
+		List<VarDecl*> *otherFmls = other->get_formals();
+		if(formals_->NumElements() != otherFmls->NumElements())
+			return false;
+		else
+		{
+			for(int i = 0; i<formals_->NumElements(); ++i)
+			{
+				VarDecl * thisVar = formals_->Nth(i);
+				VarDecl * otherVar = otherFmls->Nth(i);
+				if(!this->get_type()->IsEquivalentTo(otherVar->get_type()))
+				{
+					return false;
+				}
+			}
+		}
+	}else
+		return false;
+
+	return true;
 }

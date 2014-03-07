@@ -100,8 +100,11 @@ class FnDecl : public Decl
         FnDecl(Identifier *name, Type *returnType,
                List<VarDecl*> *formals);
         Type *get_return_type(void);
+		List<VarDecl*> *get_formals(void);
         void SetFunctionBody(Stmt *b);
         VarDecl *GetVar(Identifier *id);
+
+		bool IsSigEquivalentTo(FnDecl *other); // signitures equivalent to another function
 };
 
 #endif
