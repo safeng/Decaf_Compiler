@@ -105,6 +105,7 @@ class FnDecl : public Decl
         VarDecl *GetVar(Identifier *id);
 
 		bool IsSigEquivalentTo(FnDecl *other); // signitures equivalent to another function
+		void CheckCallCompatibility(List<Expr*> *actuals);
 };
 
 #endif

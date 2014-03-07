@@ -429,14 +429,16 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     type_ = Type::errorType; // default: set as error type
+	FnDecl * calledFn = NULL; // definition of function to be called
     if (base == NULL) {
 		// Omit this or call a global function
-        FnDecl *f = GetFn(field);
+        FnDecl *f = GetFn(field); // can be global or member function
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForFunction);
         } else {
             type_ = f->get_return_type();
+			calledFn = f;
         }
     } else {
         base->Check();
@@ -454,6 +456,7 @@ void Call::DoCheck(void)
                             (field, base->type());
                     } else {
                         type_ = f->get_return_type();
+						calledFn = f;
                     }
                 }
             } else // this.func()
@@ -465,6 +468,7 @@ void Call::DoCheck(void)
                                                      base->type());
                 } else {
                     type_ = f->get_return_type();
+					calledFn = f;
                 }
             }
         }
@@ -473,7 +477,12 @@ void Call::DoCheck(void)
     for (int i = 0; i < actuals->NumElements(); i++) {
         actuals->Nth(i)->Check();
     }
-
+	
+	// check type agreement between caller and callee. Formals vs. Actuals
+	if(calledFn != NULL)
+	{
+		calledFn->CheckCallCompatibility(actuals);
+	}
     return;
 }
 

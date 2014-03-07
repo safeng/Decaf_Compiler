@@ -364,3 +364,27 @@ bool FnDecl::IsSigEquivalentTo(FnDecl *other)
 
 	return true;
 }
+
+void FnDecl::CheckCallCompatibility(List<Expr*> *actuals)
+{
+	// Must ensure that we check node first then check type
+	int sizeNeed = formals_->NumElements();
+	int sizeProvide = actuals->NumElements();
+	if(sizeNeed != sizeProvide)
+	{
+		ReportError::NumArgsMismatch(get_id(), sizeNeed, sizeProvide);
+	}
+	int i = 0, j = 0;
+	while(i < sizeNeed && j < sizeProvide)
+	{
+		// check formals and actuals
+		Expr * actExpr = actuals->Nth(j);
+		Type * actType = actExpr->type();
+		Type * formType = formals_->Nth(i)->get_type();
+		if(!actType->IsCompatibleWith(formType))
+		{
+			ReportError::ArgMismatch(actExpr, i, formType, actType);
+		}
+		++i; ++j;
+	}
+}
