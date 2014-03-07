@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ##*** .gitignore - Untracking file list for Git ***********************
 ##
 ## This file are not ready for public access. If you are not the in-
@@ -16,3 +17,18 @@
 Session.vim
 .netrwhist
 *~
+=======
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+>>>>>>> 2ffc5388f2d3643e2b5bd915de323e7fe80343d8
