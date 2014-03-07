@@ -30,15 +30,17 @@ class Type : public Node
 
         friend std::ostream& operator<<(std::ostream& out, Type *t);
 
-        virtual bool IsEquivalentTo(Type *other);
+        virtual bool IsEquivalentTo(Type *other); // return A==B
+		virtual bool IsCompatibleWith(Type *B); // return A<=B
 };
 
-/* Type for classes and interfacess */
+/* Type for classes and interfaces */
 class NamedType : public Type
 {
     protected:
         Identifier *id_;
         void DoCheck(void);
+		bool IsCompatibleWith(Type *B);
 
     public:
         NamedType(Identifier *i);

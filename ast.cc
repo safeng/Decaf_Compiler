@@ -84,9 +84,28 @@ ClassDecl *Node::GetCurrentClass(void)
     return c;
 }
 
+FnDecl *Node::GetCurrentFn(void)
+{
+	FnDecl *f;
+	if(parent != NULL)
+		f = parent->GetCurrentFn();
+	else
+		f = NULL;
+
+	return f;
+}
+
 InterfaceDecl *Node::GetInterface(NamedType *t)
 {
-    return NULL;
+    InterfaceDecl *i;
+
+    if (parent != NULL) {
+        i = parent->GetInterface(t);
+    } else {
+        i = NULL;
+    }
+
+    return i;
 }
 
 FnDecl *Node::GetFn(Identifier *id)

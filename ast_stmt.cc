@@ -222,6 +222,8 @@ void BreakStmt::DoCheck(void)
 	Stmt *cnt = GetContextStmt();
 	if(dynamic_cast<LoopStmt*>(cnt) == NULL) // not a loop stmt
 		ReportError::BreakOutsideLoop(this);
+
+	return;
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc)
@@ -233,7 +235,18 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc)
 void ReturnStmt::DoCheck(void)
 {
     expr->Check();
-
+	// Try to find function declaration 
+	FnDecl * fnd = GetCurrentFn();
+	if(fnd != NULL)
+	{
+		// check type
+		Type * rType = expr->type();
+		Type * expt = fn->get_return_type();
+		if(!rType->IsCompatibleWith(expt))
+		{
+			ReportError::ReturnMismatch(this, rType, expt);
+		}
+	} // return not used in function
     return;
 }
 

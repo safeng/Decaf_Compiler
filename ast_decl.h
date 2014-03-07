@@ -66,6 +66,7 @@ class ClassDecl : public Decl
 
 		VarDecl *GetVar(Identifier *id);
 		FnDecl *GetFn(Identifier *id);
+		bool IsTypeCompatibleWith(NamedType *baseClass); // test whether this class is compatible with baseClass
 };
 
 class InterfaceDecl : public Decl
@@ -93,6 +94,7 @@ class FnDecl : public Decl
         Type *returnType_;
         Stmt *body_;
         void DoCheck(void);
+		FnDecl *GetCurrentFn(void);
 
     public:
         FnDecl(Identifier *name, Type *returnType,

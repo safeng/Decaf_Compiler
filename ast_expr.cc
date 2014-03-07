@@ -27,6 +27,14 @@ Type *Expr::type(void)
     return type_;
 }
 
+/*** class EmptyExpr ***********************************************/
+EmptyExpr::EmptyExpr(void) : Stmt()
+{
+	type_ = Type::voidType;
+
+	return;
+}
+
 /*** class IntConstant ***********************************************/
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc)

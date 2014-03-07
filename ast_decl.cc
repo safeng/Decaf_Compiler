@@ -177,6 +177,24 @@ FnDecl *ClassDecl::GetFn(Identifier *id)
 	return GetMemberFn(id->name());
 }
 
+bool ClassDecl::IsTypeCompatibleWith(NamedType *baseClass)
+{
+	// check extends and impl list
+	if(extends)
+	{
+		if(extends->IsCompatibleWith(baseClass)) // recursively check all ancestor classes
+			return true;
+	}
+
+    for (int i = 0; i < implements->NumElements(); i++)
+	{
+		if(implements->Nth(i)->IsEquivalentTo(baseClass))
+			return true;
+	}
+
+	return false;
+}
+
 void InterfaceDecl::DoCheck(void)
 {
     // (1) Conflicting declaration check
@@ -277,4 +295,9 @@ VarDecl *FnDecl::GetVar(Identifier *id)
     }
 
     return decl;
+}
+
+FnDecl *FnDecl::GetCurrentFn(void)
+{
+	return this;
 }

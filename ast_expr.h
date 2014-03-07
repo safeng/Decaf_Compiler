@@ -40,6 +40,7 @@ class Expr : public Stmt
 class EmptyExpr : public Expr
 {
     public:
+		EmptyExpr(void);
 };
 /* Assign type to constant */
 class IntConstant : public Expr
