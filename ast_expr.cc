@@ -214,7 +214,8 @@ void EqualityExpr::DoCheck(void)
     if (left_->type() == Type::errorType ||
         right_->type() == Type::errorType) {
         type_ = Type::errorType;
-    } else if (left_->type() == right_->type()) {
+    } else if (left_->type()->IsCompatibleWith(right_->type()) ||
+               right_->type()->IsCompatibleWith(left_->type())) {
         type_ = Type::boolType;
     } else {
         ReportError::IncompatibleOperand(op_, left_->type(),
@@ -253,8 +254,8 @@ void LogicalExpr::DoCheck(void)
         if (left_->type() == Type::errorType ||
             right_->type() == Type::errorType) {
             type_ = Type:errorType;
-        } else if (left_->type() == right_->type() &&
-                   left_->type() == Type::boolType) {
+        } else if (left_->type() == Type::boolType &&
+                   right_->type() == Type::boolType) {
             type_ = Type::boolType;
         } else {
             ReportError::IncompatibleOperand(op_, left_->type(),
@@ -291,7 +292,7 @@ void AssignExpr::DoCheck(void)
     if (left_->type() == Type::errorType ||
         right_->type() == Type::errorType) {
         type_ = Type::errorType;
-    } else if (left_->type() == right_->type()) {
+    } else if (right_->type()->IsCompatibleWith(left_->type())) {
         type_ = left_->type();
     } else {
         ReportError::IncompatibleOperand(op_, left_->type(),
@@ -333,21 +334,20 @@ void This::DoCheck(void)
 void ArrayAccess::DoCheck(void)
 {
     base_->Check();
-    subscript_->Check();
-    if (base_->type() == Type::errorType ||
-        subscript_->type() == Type::errorType) {
+    if (base_->type() == Type::errorType) {
         type_ = Type::errorType;
-    } else {
-        if (dynamic_cast<ArrayType*>(base_->type()) == NULL) {
-            ReportError::BracketsOnNonArray(base_);
-            type_ = Type::errorType;
-        }
-        if (subscript_->type() != Type::intType) {
-            ReportError::SubscriptNotInteger(subscript_);
-            type_ = Type::errorType;
-        }
+    } else if (dynamic_cast<ArrayType*>(base_->type()) == NULL) {
+        ReportError::BracketsOnNonArray(base_);
+        type_ = Type::errorType;
     }
-	// Assign the type of base to whole expression
+    subscript_->Check();
+    if (subscript_->type() == Type::errorType) {
+        type_ = Type::errorType;
+    } else if (subscript_->type() != Type::intType) {
+        ReportError::SubscriptNotInteger(subscript_);
+        type_ = Type::errorType;
+    }
+    // Assign the element type of base to the whole expression.
     if (type_ == NULL) {
         type_ = base_->type()->elem();
     }
@@ -379,34 +379,33 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 void FieldAccess::DoCheck(void)
 {
-    type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
         VarDecl *v = GetVar(field);
         if (v == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForVariable);
+            type_ = Type::errorType;
         } else {
             type_ = v->get_type();
         }
-    } else { // must be this.field
+    } else {
+        // Decaf only supports private fields. The base should always
+        // be "this".
         This *th = dynamic_cast<This*>(base);
         if (th == NULL) {
-            base->Check(); // check base
+            base->Check(); // Report any base error.
             ReportError::InaccessibleField(field, base->type());
+            type_ = Type::errorType;
         } else {
-            // Even with this.field, we should check whether we are in a class scope
+            // Class scope checking.
             th->Check();
             ClassDecl *c = GetCurrentClass();
-            if (c != NULL)
-            {
-                //NamedType *t = new NamedType(c->get_id());
-                VarDecl *v = c->GetMemberVar(field->get_name());
-                if (v == NULL) {
-                    ReportError::FieldNotFoundInBase(field,
-                                                     base->type());
-                } else {
-                    type_ = v->get_type();
-                }
+            VarDecl *v = c->GetMemberVar(field->name());
+            if (v == NULL) {
+                ReportError::FieldNotFoundInBase(field, base->type());
+                type_ = Type::errorType;
+            } else {
+                type_ = v->get_type();
             }
         }
     }
@@ -428,44 +427,48 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 
 void Call::DoCheck(void)
 {
-    type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
-		// Omit this or call a global function
+        // Call whatever we can find, in the class or not.
         FnDecl *f = GetFn(field);
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForFunction);
+            type_ = Type::errorType;
         } else {
+            // TODO: Check arguments.
             type_ = f->get_return_type();
         }
     } else {
         base->Check();
-        if (base->type() != Type::errorType) {
-            if (dynamic_cast<This*>(base) == NULL) // var.func()
-			{
-                NamedType *nt = dynamic_cast<NamedType*>(base->type());
-                if (nt == NULL) {
-                    ReportError::FieldNotFoundInBase(field, base->type());
-                } else {
-                    ClassDecl *c = GetClass(nt);
-                    FnDecl *f = c->GetMemberFn(field->name());
-                    if (f == NULL) {
-                        ReportError::FieldNotFoundInBase
-                            (field, base->type());
-                    } else {
-                        type_ = f->get_return_type();
-                    }
-                }
-            } else // this.func()
-			{
-                ClassDecl *c = GetCurrentClass(); // must exist
+        if (base->type() == Type::errorType) {
+            type_ = Type::errorType;
+        } else if (dynamic_cast<This*>(base) == NULL) {
+            // Outside the class scope
+            NamedType *nt = dynamic_cast<NamedType*>(base->type());
+            if (nt == NULL) {
+                ReportError::FieldNotFoundInBase(field, base->type());
+                type_ = Type::errorType;
+            } else {
+                ClassDecl *c = GetClass(nt);
                 FnDecl *f = c->GetMemberFn(field->name());
                 if (f == NULL) {
                     ReportError::FieldNotFoundInBase(field,
                                                      base->type());
+                    type_ = Type::errorType;
                 } else {
                     type_ = f->get_return_type();
                 }
+            }
+        } else {
+            // Inside the class scope: this.call()
+            ClassDecl *c = GetCurrentClass(); // must exist
+            FnDecl *f = c->GetMemberFn(field->name());
+            if (f == NULL) {
+                ReportError::FieldNotFoundInBase(field,
+                                                 base->type());
+                type_ = Type::errorType;
+            } else {
+                type_ = f->get_return_type();
             }
         }
     }
