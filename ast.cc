@@ -62,8 +62,8 @@ ClassDecl *Node::GetClass(NamedType *t)
 {
     ClassDecl *c;
 
-    if (parent != NULL) {
-        c = parent->GetClass(t);
+    if (parent() != NULL) {
+        c = parent()->GetClass(t);
     } else {
         c = NULL;
     }
@@ -75,8 +75,8 @@ ClassDecl *Node::GetCurrentClass(void)
 {
     ClassDecl *c;
 
-    if (parent != NULL) {
-        c = parent->GetCurrentClass();
+    if (parent() != NULL) {
+        c = parent()->GetCurrentClass();
     } else {
         c = NULL;
     }
@@ -87,8 +87,8 @@ ClassDecl *Node::GetCurrentClass(void)
 FnDecl *Node::GetCurrentFn(void)
 {
 	FnDecl *f;
-	if(parent != NULL)
-		f = parent->GetCurrentFn();
+	if(parent() != NULL)
+		f = parent()->GetCurrentFn();
 	else
 		f = NULL;
 
@@ -99,8 +99,8 @@ InterfaceDecl *Node::GetInterface(NamedType *t)
 {
     InterfaceDecl *i;
 
-    if (parent != NULL) {
-        i = parent->GetInterface(t);
+    if (parent() != NULL) {
+        i = parent()->GetInterface(t);
     } else {
         i = NULL;
     }
@@ -112,8 +112,8 @@ FnDecl *Node::GetFn(Identifier *id)
 {
     FnDecl *f;
 
-    if (parent != NULL) {
-        f = parent->GetFn(id);
+    if (parent() != NULL) {
+        f = parent()->GetFn(id);
     } else {
         f = NULL;
     }
@@ -125,8 +125,8 @@ VarDecl *Node::GetVar(Identifier *id)
 {
     VarDecl *v;
 
-    if (parent != NULL) {
-        v = parent->GetVar(id);
+    if (parent() != NULL) {
+        v = parent()->GetVar(id);
     } else {
         v = NULL;
     }

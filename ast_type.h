@@ -8,10 +8,13 @@
 #include "ast.h"
 #include "list.h"
 
+class ClassDecl;
+
 class Type : public Node
 {
     protected:
         char *name_;
+        bool is_valid_;
 
     public :
         // Static built-in types
@@ -27,11 +30,12 @@ class Type : public Node
         Type(yyltype loc);
 
         char *name(void);
+        bool is_valid(void);
 
         friend std::ostream& operator<<(std::ostream& out, Type *t);
 
         virtual bool IsEquivalentTo(Type *other); // return A==B
-		virtual bool IsCompatibleWith(Type *B); // return A<=B
+        virtual bool IsCompatibleWith(Type *B); // return A<=B
 };
 
 /* Type for classes and interfaces */
@@ -40,12 +44,13 @@ class NamedType : public Type
     protected:
         Identifier *id_;
         void DoCheck(void);
-		bool IsCompatibleWith(Type *B);
 
     public:
         NamedType(Identifier *i);
 
         Identifier *id(void);
+
+        bool IsCompatibleWith(Type *B);
 };
 
 class ArrayType : public Type

@@ -42,6 +42,7 @@ class EmptyExpr : public Expr
     public:
 		EmptyExpr(void);
 };
+
 /* Assign type to constant */
 class IntConstant : public Expr
 {
@@ -156,8 +157,8 @@ class AssignExpr : public CompoundExpr
         void DoCheck(void);
 
     public:
-        AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
-        const char *GetPrintNameForNode() { return "AssignExpr"; }
+        AssignExpr(Expr *lhs, Operator *op, Expr *rhs);
+        const char *GetPrintNameForNode();
 };
 
 class LValue : public Expr

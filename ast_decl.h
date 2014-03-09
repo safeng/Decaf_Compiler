@@ -28,7 +28,7 @@ class Decl : public Node
 
     public:
         Decl(Identifier *id);
-        Identifier *get_id(void);
+        Identifier *id(void);
         friend std::ostream& operator<<(std::ostream& out, Decl *d);
 };
 
@@ -40,7 +40,7 @@ class VarDecl : public Decl
 
     public:
         VarDecl(Identifier *name, Type *type);
-        Type *get_type(void);
+        Type *type(void);
 };
 
 class ClassDecl : public Decl
@@ -50,23 +50,25 @@ class ClassDecl : public Decl
         void MergeSymbolTable(ClassDecl *base);
 
     protected:
-        List<Decl*> *members;
-        NamedType *extends;
-        List<NamedType*> *implements;
+        List<Decl*> *members_;
+        NamedType *extends_;
+        List<NamedType*> *implements_;
         void DoCheck(void);
 
     public:
-        ClassDecl(Identifier *name, NamedType *extends,
-                  List<NamedType*> *implements, List<Decl*> *members);
+        ClassDecl(Identifier *n, NamedType *ext,
+                  List<NamedType*> *impl, List<Decl*> *memb);
 
-        Hashtable<Decl*> *get_sym_table(void);
+        Hashtable<Decl*> *sym_table(void);
+
         ClassDecl *GetCurrentClass(void);
         VarDecl *GetMemberVar(char *name);
         FnDecl *GetMemberFn(char *name);
+        VarDecl *GetVar(Identifier *id);
+        FnDecl *GetFn(Identifier *id);
 
-		VarDecl *GetVar(Identifier *id);
-		FnDecl *GetFn(Identifier *id);
-		bool IsTypeCompatibleWith(NamedType *baseClass); // test whether this class is compatible with baseClass
+        // test whether this class is compatible with baseClass
+        bool IsTypeCompatibleWith(NamedType *t);
 };
 
 class InterfaceDecl : public Decl
@@ -79,9 +81,9 @@ class InterfaceDecl : public Decl
         void DoCheck(void);
 
     public:
-        InterfaceDecl(Identifier *name, List<Decl*> *members);
+        InterfaceDecl(Identifier *n, List<Decl*> *memb);
 
-        Hashtable<Decl*> *get_sym_table(void);
+        Hashtable<Decl*> *namesym_table(void);
 };
 
 class FnDecl : public Decl
@@ -91,16 +93,17 @@ class FnDecl : public Decl
 
     protected:
         List<VarDecl*> *formals_;
-        Type *returnType_;
+        Type *return_type_;
         Stmt *body_;
         void DoCheck(void);
-		FnDecl *GetCurrentFn(void);
+        FnDecl *GetCurrentFn(void);
 
     public:
-        FnDecl(Identifier *name, Type *returnType,
-               List<VarDecl*> *formals);
-        Type *get_return_type(void);
-        void SetFunctionBody(Stmt *b);
+        FnDecl(Identifier *n, Type *ret, List<VarDecl*> *form);
+
+        Type *return_type(void);
+        void set_body(Stmt *b);
+
         VarDecl *GetVar(Identifier *id);
 };
 

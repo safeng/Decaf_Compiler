@@ -92,10 +92,10 @@ template<class Element> class List {
         // They will only work on lists of elements that respond to the
         // messages, but since C++ only instantiates the template if you use
         // you can still have Lists of ints, chars*, as long as you
-        // don't try to SetParentAll on that list.
-        void SetParentAll(Node *p)
+        // don't try to set_parent_all on that list.
+        void set_parent_all(Node *p)
         { for (int i = 0; i < NumElements(); i++)
-            Nth(i)->SetParent(p); }
+            Nth(i)->set_parent(p); }
 
 };
 
