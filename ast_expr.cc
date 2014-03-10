@@ -385,36 +385,35 @@ void FieldAccess::DoCheck(void)
         This *th = dynamic_cast<This*>(base);
         if (th == NULL) {
             base->Check(); // check base
-			// report error based on type of base
-			Type * baseType = base->type();
-			if(baseType != Type::errorType)
-			{
-				NamedType * classType = dynamic_cast<NamedType*>(baseType);
-				if(classType != NULL)
-				{
-					ClassDecl *c = GetClass(classType);
-					if(c != NULL)
-					{
-						VarDecl *v = c->GetMemberVar(field->name());
-						if (v == NULL) {
-							ReportError::FieldNotFoundInBase(field,
-														base->type());
-						}else 
-						{
-							ReportError::InaccessibleField(field,
-														base->type());
-						}
-					}else // interface
-					{
-						ReportError::FieldNotFoundInBase(field,
-														base->type());
-					}
-				}else // Other types
-				{
+            // report error based on type of base
+            Type * baseType = base->type();
+            if (baseType != Type::errorType) {
+                NamedType * classType = dynamic_cast<NamedType*>(baseType);
+                if (classType != NULL) {
+                    ClassDecl *c = GetClass(classType);
+                    if (c != NULL) {
+                        VarDecl *v = c->GetMemberVar(field->name());
+                        if (v == NULL) {
+                            ReportError::FieldNotFoundInBase(field,
+                                                             base->type());
+                        } else {
+                            if (GetCurrentClass() == c) {
+                                v->Check();
+                                type_ = v->type();
+                            } else {
+                                ReportError::InaccessibleField(field,
+                                                               base->type());
+                            }
+                        }
+                    } else {
+                        ReportError::FieldNotFoundInBase(field,
+                                                         base->type());
+                    }
+                } else {
                     ReportError::FieldNotFoundInBase(field,
                                                      base->type());
-				}
-			}
+                }
+            }
         } else {
             // Even with this.field, we should check whether we are in a class scope
             th->Check();
@@ -500,7 +499,7 @@ void Call::DoCheck(void)
     }
 
     // Check type agreement between caller and callee.
-    if (calledFn != NULL) {
+    if (strcmp("length", field->name()) && calledFn != NULL) {
         calledFn->CheckCallCompatibility(field, actuals);
     }
 
