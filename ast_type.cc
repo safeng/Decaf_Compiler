@@ -107,13 +107,14 @@ bool NamedType::IsCompatibleWith(Type *other)
     } else if (B == NULL) {
         comp = false;
     } else {
+		// Can be interface
         ClassDecl *c = GetClass(this);
         if (c != NULL) {
             // Search base class and interfaces
             comp = c->IsTypeCompatibleWith(B);
         } else {
-            // Named type is not declared. But we consider it matched
-            comp = true;
+			// this must be interface
+            comp = false;
         }
     }
 

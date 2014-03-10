@@ -381,3 +381,9 @@ void FnDecl::CheckCallCompatibility(Identifier *caller,
         ++i; ++j;
     }
 }
+
+LengthFn::LengthFn(yyltype loc):
+	:FnDecl(new Identifier(loc, "length"), type::intType, new List<VarDecl*>)
+{
+	return;
+}

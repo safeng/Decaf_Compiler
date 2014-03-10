@@ -111,6 +111,13 @@ class FnDecl : public Decl
         bool IsSigEquivalentTo(FnDecl *other);
         void CheckCallCompatibility(Identifier *caller,
                                     List<Expr*> *actuals);
+
+};
+
+class LengthFn : public FnDecl
+{
+	public:
+		LengthFn(yyltype loc);
 };
 
 #endif
