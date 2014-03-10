@@ -507,7 +507,7 @@ void Call::DoCheck(void)
 
     // Check type agreement between caller and callee.
     if (calledFn != NULL) {
-        calledFn->CheckCallCompatibility(actuals);
+        calledFn->CheckCallCompatibility(field, actuals);
     }
 
     return;

@@ -360,13 +360,14 @@ bool FnDecl::IsSigEquivalentTo(FnDecl *other)
     return eqv;
 }
 
-void FnDecl::CheckCallCompatibility(List<Expr*> *actuals)
+void FnDecl::CheckCallCompatibility(Identifier *caller,
+                                    List<Expr*> *actuals)
 {
     // Must ensure that we check node first then check type
     int sizeNeed = formals_->NumElements();
     int sizeProvide = actuals->NumElements();
     if (sizeNeed != sizeProvide) {
-        ReportError::NumArgsMismatch(id(), sizeNeed, sizeProvide);
+        ReportError::NumArgsMismatch(caller, sizeNeed, sizeProvide);
     }
     int i = 0, j = 0;
     while(i < sizeNeed && j < sizeProvide) {

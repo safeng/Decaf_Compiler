@@ -109,7 +109,8 @@ class FnDecl : public Decl
 
         // signitures equivalent to another function
         bool IsSigEquivalentTo(FnDecl *other);
-        void CheckCallCompatibility(List<Expr*> *actuals);
+        void CheckCallCompatibility(Identifier *caller,
+                                    List<Expr*> *actuals);
 };
 
 #endif
