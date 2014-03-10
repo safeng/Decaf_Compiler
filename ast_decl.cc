@@ -41,7 +41,10 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
 void VarDecl::DoCheck(void)
 {
     type_->Check();
-
+	if(!type_->is_valid()) // change type to errorType to avoid cascading errors
+	{
+		type_ = Type::errorType;
+	}
     return;
 }
 

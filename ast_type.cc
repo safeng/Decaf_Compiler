@@ -66,7 +66,7 @@ bool Type::IsEquivalentTo(Type *other)
 bool Type::IsCompatibleWith(Type *other)
 {
     return ((this == Type::nullType &&
-             dynamic_cast<NamedType*>(other) != NULL) ||
+             dynamic_cast<NamedType*>(other) != NULL) || // null vs. Namedtype
             IsEquivalentTo(other));
 }
 
