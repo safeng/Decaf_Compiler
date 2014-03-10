@@ -208,11 +208,14 @@ FnDecl *ClassDecl::GetFn(Identifier *i)
 bool ClassDecl::IsTypeCompatibleWith(NamedType *t)
 {
     bool comp = false;
-    if (extends_ != NULL && extends_->IsCompatibleWith(t)) {
+    if (extends_ != NULL && GetClass(extends_) != NULL &&
+        extends_->IsCompatibleWith(t)) {
         comp = true;
     }
     for (int i = 0; !comp && i < implements_->NumElements(); i++) {
-        comp = implements_->Nth(i)->IsEquivalentTo(t);
+        if (GetInterface(implements_->Nth(i)) != NULL) {
+            comp = implements_->Nth(i)->IsEquivalentTo(t);
+        }
     }
 
     return comp;
