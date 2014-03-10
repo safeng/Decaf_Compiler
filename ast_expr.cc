@@ -395,10 +395,26 @@ void FieldAccess::DoCheck(void)
 			Type * baseType = base->type();
 			if(baseType != Type::errorType)
 			{
-				if(dynamic_cast<NamedType*>(baseType) != NULL) // NamedType
+				NamedType * classType = dynamic_cast<NamedType*>(baseType);
+				if(classType != NULL)
 				{
-					ReportError::InaccessibleField(field,
-													base->type());
+					ClassDecl *c = GetClass(classType);
+					if(c != NULL)
+					{
+						VarDecl *v = c->GetMemberVar(field->name());
+						if (v == NULL) {
+							ReportError::FieldNotFoundInBase(field,
+														base->type());
+						}else 
+						{
+							ReportError::InaccessibleField(field,
+														base->type());
+						}
+					}else // interface
+					{
+						ReportError::FieldNotFoundInBase(field,
+														base->type());
+					}
 				}else // Other types
 				{
                     ReportError::FieldNotFoundInBase(field,
