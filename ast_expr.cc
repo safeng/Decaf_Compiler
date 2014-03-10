@@ -185,18 +185,12 @@ ArithmeticExpr::ArithmeticExpr(Operator *op, Expr *rhs) :
 void RelationalExpr::DoCheck(void)
 {
     OperandCheck();
-    if (left_->type() == Type::errorType ||
-        right_->type() == Type::errorType) {
-        type_ = Type::errorType;
-    } else if (left_->type() == right_->type() &&
-               (left_->type() == Type::intType ||
-                left_->type() == Type::doubleType)) {
-        type_ = Type::boolType;
-    } else {
+    if (!left_->type()->IsCompatibleWith(right_->type()) &&
+        !right_->type()->IsCompatibleWith(left_->type())) {
         ReportError::IncompatibleOperands(op_, left_->type(),
                                           right_->type());
-        type_ = Type::errorType;
     }
+    type_ = Type::boolType;
 
     return;
 }
