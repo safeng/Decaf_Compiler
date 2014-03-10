@@ -245,7 +245,7 @@ void LogicalExpr::DoCheck(void)
     if (left_ == NULL) {
         if (right_->type() == Type::boolType ||
             right_->type() == Type::errorType) {
-            type_ = right_->type();
+            type_ = Type::boolType;
         } else {
             ReportError::IncompatibleOperand(op_, right_->type());
             type_ = Type::errorType;
@@ -254,8 +254,8 @@ void LogicalExpr::DoCheck(void)
         if (left_->type() == Type::errorType ||
             right_->type() == Type::errorType) {
             type_ = Type::errorType;
-        } else if (left_->type() == right_->type() &&
-                   left_->type() == Type::boolType) {
+        } else if (left_->type() == Type::boolType &&
+                   right_->type() == Type::boolType) {
             type_ = Type::boolType;
         } else {
             ReportError::IncompatibleOperands(op_, left_->type(),
@@ -292,7 +292,7 @@ void AssignExpr::DoCheck(void)
     if (left_->type() == Type::errorType ||
         right_->type() == Type::errorType) {
         type_ = Type::errorType;
-    } else if (left_->type() == right_->type()) {
+    } else if (right_->type()->IsCompatibleWith(left_->type())) {
         type_ = left_->type();
     } else {
         ReportError::IncompatibleOperands(op_, left_->type(),
@@ -366,9 +366,9 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *base, Expr *subscript) :
 }
 
 
-FieldAccess::FieldAccess(Expr *b, Identifier *f)
-: LValue((b != NULL) ? Join(b->location(), f->location())
-         : *f->location())
+FieldAccess::FieldAccess(Expr *b, Identifier *f) :
+    LValue((b != NULL) ? Join(b->location(), f->location())
+           : *f->location())
 {
     Assert(f != NULL); // b can be be NULL
     base = b;
@@ -388,7 +388,7 @@ void FieldAccess::DoCheck(void)
                                                LookingForVariable);
         } else {
             type_ = v->type();
-            if (type_->is_valid()) {
+            if (!type_->is_valid()) {
                 type_ = Type::errorType;
             }
         }
@@ -433,10 +433,10 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     type_ = Type::errorType; // default: set as error type
-    FnDecl * calledFn = NULL; // definition of function to be called
+    FnDecl *calledFn = NULL; // definition of function to be called
     if (base == NULL) {
         // Omit this or call a global function
-        FnDecl *f = GetFn(field); // can be global or member function
+        FnDecl *f = GetFn(field);
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForFunction);
@@ -450,22 +450,14 @@ void Call::DoCheck(void)
             if (dynamic_cast<This*>(base) == NULL) {
                 // var.func()
                 NamedType *nt = dynamic_cast<NamedType*>(base->type());
-                if (nt == NULL) {
-                    ReportError::FieldNotFoundInBase(field, base->type());
+                ClassDecl *c = nt == NULL ? NULL : GetClass(nt);
+                FnDecl *f = c == NULL ? NULL : c->GetMemberFn(field->name());
+                if (f == NULL) {
+                    ReportError::FieldNotFoundInBase(field,
+                                                     base->type());
                 } else {
-                    ClassDecl *c = GetClass(nt);
-                    if (c == NULL) {
-                        ReportError::FieldNotFoundInBase(field, base->type());
-                    } else {
-                        FnDecl *f = c->GetMemberFn(field->name());
-                        if (f == NULL) {
-                            ReportError::FieldNotFoundInBase(field,
-                                                             base->type());
-                        } else {
-                            type_ = f->return_type();
-                            calledFn = f;
-                        }
-                    }
+                    type_ = f->return_type();
+                    calledFn = f;
                 }
             } else {
                 // this.func()
@@ -486,10 +478,11 @@ void Call::DoCheck(void)
         actuals->Nth(i)->Check();
     }
 
-    // check type agreement between caller and callee. Formals vs. Actuals
+    // Check type agreement between caller and callee.
     if (calledFn != NULL) {
         calledFn->CheckCallCompatibility(actuals);
     }
+
     return;
 }
 
@@ -508,6 +501,9 @@ void NewExpr::DoCheck(void)
     if (GetClass(cType) == NULL) {
         ReportError::IdentifierNotDeclared(cType->id(),
                                            LookingForClass);
+        type_ = Type::errorType;
+    } else {
+        type_ = cType;
     }
 
     return;

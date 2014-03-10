@@ -207,12 +207,10 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb)
 
 void IfStmt::DoCheck(void)
 {
-    test->Check();
-    body->Check();
+    ConditionalStmt::DoCheck();
     if (elseBody != NULL) {
         elseBody->Check();
     }
-    ConditionalStmt::DoCheck(); // check non-boolean test expr
     return;
 }
 

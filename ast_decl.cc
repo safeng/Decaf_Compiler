@@ -183,7 +183,7 @@ VarDecl *ClassDecl::GetMemberVar(char *n)
 
 VarDecl *ClassDecl::GetVar(Identifier *i)
 {
-    VarDecl * memVar = GetMemberVar(i->name());
+    VarDecl *memVar = GetMemberVar(i->name());
     if (memVar == NULL) {
         memVar = parent()->GetVar(i); // maybe global scope
     }
@@ -198,7 +198,7 @@ FnDecl *ClassDecl::GetMemberFn(char *n)
 
 FnDecl *ClassDecl::GetFn(Identifier *i)
 {
-    FnDecl * memFn = GetMemberFn(i->name());
+    FnDecl *memFn = GetMemberFn(i->name());
     if (memFn == NULL) {
         memFn = parent()->GetFn(i); // global function
     }

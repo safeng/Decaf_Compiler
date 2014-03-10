@@ -58,27 +58,23 @@ bool Type::is_valid(void)
 
 bool Type::IsEquivalentTo(Type *other)
 {
-    bool result = false;
-
-    if(this == Type::errorType ||
-       other == Type::errorType ||
-       strcmp(name_, other->name()) == 0) {
-        result = true;
-    }
-
-    return result;
+    return (this == Type::errorType ||
+            other == Type::errorType ||
+            strcmp(name_, other->name()) == 0);
 }
 
 bool Type::IsCompatibleWith(Type *other)
 {
-    return IsEquivalentTo(other);
+    return ((this == Type::nullType &&
+             dynamic_cast<NamedType*>(other) != NULL) ||
+            IsEquivalentTo(other));
 }
 
 /*** class NamedType *************************************************/
 
 void NamedType::DoCheck(void)
 {
-    if (GetClass(this) == NULL) {
+    if (GetClass(this) == NULL && GetInterface(this) == NULL) {
         ReportError::IdentifierNotDeclared(id_, LookingForType);
         is_valid_ = false;
     }
@@ -104,29 +100,24 @@ Identifier *NamedType::id(void)
 bool NamedType::IsCompatibleWith(Type *other)
 {
     // Assume that NamedType has been checked
-    if(IsEquivalentTo(other)) {
-        // consider error type
-        return true;
-    }
-    // check null type
+    bool comp = true;
     NamedType *B = dynamic_cast<NamedType*>(other);
-    if(B == NULL) {
-        return false;
+    if (IsEquivalentTo(other)) {
+        comp = true;
+    } else if (B == NULL) {
+        comp = false;
     } else {
-        if (this == Type::nullType) {
-            // null type is compatible with any NamedType
-            return true;
+        ClassDecl *c = GetClass(this);
+        if (c != NULL) {
+            // Search base class and interfaces
+            comp = c->IsTypeCompatibleWith(B);
         } else {
-            ClassDecl * c = GetClass(this);
-            if (c != NULL) {
-                // Search base class and interfaces
-                return c->IsTypeCompatibleWith(B);
-            } else {
-                // Named type is not declared. But we consider it matched
-                return true;
-            }
+            // Named type is not declared. But we consider it matched
+            comp = true;
         }
     }
+
+    return comp;
 }
 
 /*** class ArrayType *************************************************/
