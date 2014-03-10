@@ -15,6 +15,7 @@
 
 #include "ast.h"
 #include "ast_type.h"
+#include "ast_expr.h"
 #include "hashtable.h"
 #include "list.h"
 
@@ -27,8 +28,8 @@ class Decl : public Node
         Identifier *id_;
 
     public:
-        Decl(Identifier *id);
-        Identifier *get_id(void);
+        Decl(Identifier *i);
+        Identifier *id(void);
         friend std::ostream& operator<<(std::ostream& out, Decl *d);
 };
 
@@ -40,7 +41,7 @@ class VarDecl : public Decl
 
     public:
         VarDecl(Identifier *name, Type *type);
-        Type *get_type(void);
+        Type *type(void);
 };
 
 class ClassDecl : public Decl
@@ -50,23 +51,23 @@ class ClassDecl : public Decl
         void MergeSymbolTable(ClassDecl *base);
 
     protected:
-        List<Decl*> *members;
-        NamedType *extends;
-        List<NamedType*> *implements;
+        List<Decl*> *members_;
+        NamedType *extends_;
+        List<NamedType*> *implements_;
         void DoCheck(void);
 
     public:
-        ClassDecl(Identifier *name, NamedType *extends,
-                  List<NamedType*> *implements, List<Decl*> *members);
+        ClassDecl(Identifier *n, NamedType *ext,
+                  List<NamedType*> *impl, List<Decl*> *memb);
 
-        Hashtable<Decl*> *get_sym_table(void);
+        Hashtable<Decl*> *sym_table(void);
         ClassDecl *GetCurrentClass(void);
         VarDecl *GetMemberVar(char *name);
         FnDecl *GetMemberFn(char *name);
 
-		VarDecl *GetVar(Identifier *id);
-		FnDecl *GetFn(Identifier *id);
-		bool IsTypeCompatibleWith(NamedType *baseClass); // test whether this class is compatible with baseClass
+        VarDecl *GetVar(Identifier *i);
+        FnDecl *GetFn(Identifier *i);
+        bool IsTypeCompatibleWith(NamedType *baseClass); // test whether this class is compatible with baseClass
 };
 
 class InterfaceDecl : public Decl
@@ -81,7 +82,7 @@ class InterfaceDecl : public Decl
     public:
         InterfaceDecl(Identifier *name, List<Decl*> *members);
 
-        Hashtable<Decl*> *get_sym_table(void);
+        Hashtable<Decl*> *sym_table(void);
 };
 
 class FnDecl : public Decl
@@ -91,21 +92,21 @@ class FnDecl : public Decl
 
     protected:
         List<VarDecl*> *formals_;
-        Type *returnType_;
+        Type *return_type_;
         Stmt *body_;
         void DoCheck(void);
-		FnDecl *GetCurrentFn(void);
+        FnDecl *GetCurrentFn(void);
 
     public:
-        FnDecl(Identifier *name, Type *returnType,
-               List<VarDecl*> *formals);
-        Type *get_return_type(void);
-		List<VarDecl*> *get_formals(void);
-        void SetFunctionBody(Stmt *b);
-        VarDecl *GetVar(Identifier *id);
+        FnDecl(Identifier *n, Type *ret, List<VarDecl*> *form);
+        Type *return_type(void);
+        List<VarDecl*> *formals(void);
+        void set_body(Stmt *b);
+        VarDecl *GetVar(Identifier *i);
 
-		bool IsSigEquivalentTo(FnDecl *other); // signitures equivalent to another function
-		void CheckCallCompatibility(List<Expr*> *actuals);
+        // signitures equivalent to another function
+        bool IsSigEquivalentTo(FnDecl *other);
+        void CheckCallCompatibility(List<Expr*> *actuals);
 };
 
 #endif

@@ -183,7 +183,7 @@ FormalList:    FormalList ',' Variable
           |    Variable             { ($$ = new List<VarDecl*>)->Append($1); }
           ;
 
-FnDecl    :    FnHeader StmtBlock   { ($$=$1)->SetFunctionBody($2); }
+FnDecl    :    FnHeader StmtBlock   { ($$=$1)->set_body($2); }
           ;
 
 StmtBlock :    '{' VarDecls StmtList '}' 

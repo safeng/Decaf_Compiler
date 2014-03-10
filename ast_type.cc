@@ -36,24 +36,19 @@ char *Type::name(void)
 
 std::ostream& operator<<(std::ostream& out, Type *t)
 {
-    out << name_;
+    out << t->name();
 
     return out;
 }
 
 bool Type::IsEquivalentTo(Type *other)
 {
-	// special case for error type
-	if(this == Type::errorType ||
-			other == Type::errorType)
-		return true;
+    bool result = false;
 
-    bool result;
-
-    if (strcmp(name_, other->name()) == 0) {
+    if(this == Type::errorType ||
+       other == Type::errorType ||
+       strcmp(name_, other->name()) == 0) {
         result = true;
-    } else {
-        result = false;
     }
 
     return result;
@@ -61,7 +56,7 @@ bool Type::IsEquivalentTo(Type *other)
 
 bool Type::IsCompatibleWith(Type *other)
 {
-	return IsEquivalentTo(other);
+    return IsEquivalentTo(other);
 }
 
 /*** class NamedType *************************************************/
@@ -78,7 +73,7 @@ void NamedType::DoCheck(void)
 NamedType::NamedType(Identifier *i) : Type(*i->location())
 {
     Assert(i != NULL);
-    (id_ = i)->SetParent(this);
+    (id_ = i)->set_parent(this);
     name_ = id_->name();
 
     return;
@@ -91,28 +86,30 @@ Identifier *NamedType::id(void)
 
 bool NamedType::IsCompatibleWith(Type *other)
 {
-	// Assume that NamedType has been checked
-	if(IsEquivalentTo(other)) // consider error type
-		return true;
-	// check null type
-	NamedType *B = dynamic_cast<NamedType*>(other);
-	if(B == NULL)
-		return false;
-	else
-	{
-		if(this == Type::nullType) // null type is compatible with any NamedType
-			return true;
-		else
-		{
-			ClassDecl * c = GetClass(this);
-			if(c != NULL)
-			{
-				// Search base class and interfaces
-				return c->IsTypeCompatibleWith(B);
-			}else // Named type is not declared. But we consider it matched
-				return true;
-		}
-	}
+    // Assume that NamedType has been checked
+    if(IsEquivalentTo(other)) {
+        // consider error type
+        return true;
+    }
+    // check null type
+    NamedType *B = dynamic_cast<NamedType*>(other);
+    if(B == NULL) {
+        return false;
+    } else {
+        if (this == Type::nullType) {
+            // null type is compatible with any NamedType
+            return true;
+        } else {
+            ClassDecl * c = GetClass(this);
+            if (c != NULL) {
+                // Search base class and interfaces
+                return c->IsTypeCompatibleWith(B);
+            } else {
+                // Named type is not declared. But we consider it matched
+                return true;
+            }
+        }
+    }
 }
 
 /*** class ArrayType *************************************************/
@@ -120,9 +117,9 @@ bool NamedType::IsCompatibleWith(Type *other)
 ArrayType::ArrayType(yyltype loc, Type *t) : Type(loc)
 {
     Assert(t != NULL);
-    (elem_ = t)->SetParent(this);
+    (elem_ = t)->set_parent(this);
     name_ = strdup(elem_->name());
-    realloc(name_, strlen(name_) + 3);
+    name_ = (char*)realloc(name_, strlen(name_) + 3);
     if (name_ == NULL) {
         exit(137);
     }

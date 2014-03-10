@@ -28,11 +28,12 @@ Type *Expr::type(void)
 }
 
 /*** class EmptyExpr ***********************************************/
-EmptyExpr::EmptyExpr(void) : Stmt()
-{
-	type_ = Type::voidType;
 
-	return;
+EmptyExpr::EmptyExpr(void) : Expr()
+{
+    type_ = Type::voidType;
+
+    return;
 }
 
 /*** class IntConstant ***********************************************/
@@ -90,8 +91,8 @@ NullConstant::NullConstant(yyltype loc) : Expr(loc)
 
 Operator::Operator(yyltype loc, const char *lexeme) : Node(loc)
 {
-    Assert(tok != NULL);
-    strncpy(lexeme_, tok, sizeof(lexeme_));
+    Assert(lexeme != NULL);
+    strncpy(lexeme_, lexeme, sizeof(lexeme_));
 
     return;
 }
@@ -114,23 +115,23 @@ void CompoundExpr::OperandCheck(void)
 }
 
 CompoundExpr::CompoundExpr(Expr *lhs, Operator *op, Expr *rhs) :
-    Expr(Join(lhs->GetLocation(), rhs->GetLocation()))
+    Expr(Join(lhs->location(), rhs->location()))
 {
     Assert(lhs != NULL && op != NULL && rhs != NULL);
-    (op_ = op)->SetParent(this);
-    (left_ = lhs)->SetParent(this);
-    (right_ = rhs)->SetParent(this);
+    (op_ = op)->set_parent(this);
+    (left_ = lhs)->set_parent(this);
+    (right_ = rhs)->set_parent(this);
 
     return;
 }
 
 CompoundExpr::CompoundExpr(Operator *op, Expr *rhs) :
-    Expr(Join(o->GetLocation(), rhs->GetLocation()))
+    Expr(Join(op->location(), rhs->location()))
 {
     Assert(op != NULL && rhs != NULL);
     left_ = NULL;
-    (op_ = op)->SetParent(this);
-    (right_ = rhs)->SetParent(this);
+    (op_ = op)->set_parent(this);
+    (right_ = rhs)->set_parent(this);
 
     return;
 }
@@ -156,10 +157,10 @@ void ArithmeticExpr::DoCheck(void)
         } else if (left_->type() == right_->type() &&
                    (left_->type() == Type::intType ||
                     left_->type() == Type::doubleType)) {
-                type_ = left_->type();
+            type_ = left_->type();
         } else {
-            ReportError::IncompatibleOperand(op_, left_->type(),
-                                             right_->type());
+            ReportError::IncompatibleOperands(op_, left_->type(),
+                                              right_->type());
             type_ = Type::errorType;
         }
     }
@@ -192,8 +193,8 @@ void RelationalExpr::DoCheck(void)
                 left_->type() == Type::doubleType)) {
         type_ = left_->type();
     } else {
-        ReportError::IncompatibleOperand(op_, left_->type(),
-                                         right_->type());
+        ReportError::IncompatibleOperands(op_, left_->type(),
+                                          right_->type());
         type_ = Type::errorType;
     }
 
@@ -217,8 +218,8 @@ void EqualityExpr::DoCheck(void)
     } else if (left_->type() == right_->type()) {
         type_ = Type::boolType;
     } else {
-        ReportError::IncompatibleOperand(op_, left_->type(),
-                                         right_->type());
+        ReportError::IncompatibleOperands(op_, left_->type(),
+                                          right_->type());
         type_ = Type::errorType;
     }
 
@@ -231,7 +232,7 @@ EqualityExpr::EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) :
     return;
 }
 
-char *EqualityExpr::GetPrintNameForNode(void)
+const char *EqualityExpr::GetPrintNameForNode(void)
 {
     return "EqualityExpr";
 }
@@ -252,13 +253,13 @@ void LogicalExpr::DoCheck(void)
     } else {
         if (left_->type() == Type::errorType ||
             right_->type() == Type::errorType) {
-            type_ = Type:errorType;
+            type_ = Type::errorType;
         } else if (left_->type() == right_->type() &&
                    left_->type() == Type::boolType) {
             type_ = Type::boolType;
         } else {
-            ReportError::IncompatibleOperand(op_, left_->type(),
-                                             right_->type());
+            ReportError::IncompatibleOperands(op_, left_->type(),
+                                              right_->type());
             type_ = Type::errorType;
         }
     }
@@ -278,7 +279,7 @@ LogicalExpr::LogicalExpr(Operator *op, Expr *rhs) :
     return;
 }
 
-char *LogicalExpr::GetPrintNameForNode(void)
+const char *LogicalExpr::GetPrintNameForNode(void)
 {
     return "LogicalExpr";
 }
@@ -294,8 +295,8 @@ void AssignExpr::DoCheck(void)
     } else if (left_->type() == right_->type()) {
         type_ = left_->type();
     } else {
-        ReportError::IncompatibleOperand(op_, left_->type(),
-                                         right_->type());
+        ReportError::IncompatibleOperands(op_, left_->type(),
+                                          right_->type());
         type_ = Type::errorType;
     }
 
@@ -308,7 +309,7 @@ AssignExpr::AssignExpr(Expr *lhs, Operator *op, Expr *rhs) :
     return;
 }
 
-char *AssignExpr::GetPrintNameForNode(void)
+const char *AssignExpr::GetPrintNameForNode(void)
 {
     return "AssignExpr";
 }
@@ -322,7 +323,7 @@ void This::DoCheck(void)
         ReportError::ThisOutsideClassScope(this);
         type_ = Type::errorType;
     } else {
-        type_ = new NamedType(c->get_id());
+        type_ = new NamedType(c->id());
     }
 
     return;
@@ -347,9 +348,9 @@ void ArrayAccess::DoCheck(void)
             type_ = Type::errorType;
         }
     }
-	// Assign the type of base to whole expression
+    // Assign the type of base to whole expression
     if (type_ == NULL) {
-        type_ = base_->type()->elem();
+        type_ = dynamic_cast<ArrayType*>(base_->type())->elem();
     }
 
     return;
@@ -358,21 +359,21 @@ void ArrayAccess::DoCheck(void)
 ArrayAccess::ArrayAccess(yyltype loc, Expr *base, Expr *subscript) :
     LValue(loc)
 {
-    (base_ = base)->SetParent(this);
-    (subscript_ = subscript)->SetParent(this);
+    (base_ = base)->set_parent(this);
+    (subscript_ = subscript)->set_parent(this);
 
     return;
 }
 
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f)
-: LValue((b != NULL) ? Join(b->GetLocation(), f->GetLocation())
-         : *f->GetLocation())
+: LValue((b != NULL) ? Join(b->location(), f->location())
+         : *f->location())
 {
     Assert(f != NULL); // b can be be NULL
     base = b;
-    if (base) base->SetParent(this);
-    (field=f)->SetParent(this);
+    if (base) base->set_parent(this);
+    (field=f)->set_parent(this);
 
     return;
 }
@@ -386,7 +387,7 @@ void FieldAccess::DoCheck(void)
             ReportError::IdentifierNotDeclared(field,
                                                LookingForVariable);
         } else {
-            type_ = v->get_type();
+            type_ = v->type();
         }
     } else { // must be this.field
         This *th = dynamic_cast<This*>(base);
@@ -399,13 +400,13 @@ void FieldAccess::DoCheck(void)
             ClassDecl *c = GetCurrentClass();
             if (c != NULL)
             {
-                //NamedType *t = new NamedType(c->get_id());
-                VarDecl *v = c->GetMemberVar(field->get_name());
+                //NamedType *t = new NamedType(c->id());
+                VarDecl *v = c->GetMemberVar(field->name());
                 if (v == NULL) {
                     ReportError::FieldNotFoundInBase(field,
                                                      base->type());
                 } else {
-                    type_ = v->get_type();
+                    type_ = v->type();
                 }
             }
         }
@@ -419,9 +420,9 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 {
     Assert(f != NULL && a != NULL);
     base = b;
-    if (base) base->SetParent(this);
-    (field=f)->SetParent(this);
-    (actuals=a)->SetParentAll(this);
+    if (base) base->set_parent(this);
+    (field=f)->set_parent(this);
+    (actuals=a)->set_parent_all(this);
 
     return;
 }
@@ -429,22 +430,22 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 void Call::DoCheck(void)
 {
     type_ = Type::errorType; // default: set as error type
-	FnDecl * calledFn = NULL; // definition of function to be called
+    FnDecl * calledFn = NULL; // definition of function to be called
     if (base == NULL) {
-		// Omit this or call a global function
+        // Omit this or call a global function
         FnDecl *f = GetFn(field); // can be global or member function
         if (f == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForFunction);
         } else {
-            type_ = f->get_return_type();
-			calledFn = f;
+            type_ = f->return_type();
+            calledFn = f;
         }
     } else {
         base->Check();
         if (base->type() != Type::errorType) {
             if (dynamic_cast<This*>(base) == NULL) // var.func()
-			{
+            {
                 NamedType *nt = dynamic_cast<NamedType*>(base->type());
                 if (nt == NULL) {
                     ReportError::FieldNotFoundInBase(field, base->type());
@@ -455,20 +456,20 @@ void Call::DoCheck(void)
                         ReportError::FieldNotFoundInBase
                             (field, base->type());
                     } else {
-                        type_ = f->get_return_type();
-						calledFn = f;
+                        type_ = f->return_type();
+                        calledFn = f;
                     }
                 }
             } else // this.func()
-			{
+            {
                 ClassDecl *c = GetCurrentClass(); // must exist
                 FnDecl *f = c->GetMemberFn(field->name());
                 if (f == NULL) {
                     ReportError::FieldNotFoundInBase(field,
                                                      base->type());
                 } else {
-                    type_ = f->get_return_type();
-					calledFn = f;
+                    type_ = f->return_type();
+                    calledFn = f;
                 }
             }
         }
@@ -477,12 +478,12 @@ void Call::DoCheck(void)
     for (int i = 0; i < actuals->NumElements(); i++) {
         actuals->Nth(i)->Check();
     }
-	
-	// check type agreement between caller and callee. Formals vs. Actuals
-	if(calledFn != NULL)
-	{
-		calledFn->CheckCallCompatibility(actuals);
-	}
+
+    // check type agreement between caller and callee. Formals vs. Actuals
+    if(calledFn != NULL)
+    {
+        calledFn->CheckCallCompatibility(actuals);
+    }
     return;
 }
 
@@ -490,7 +491,7 @@ void Call::DoCheck(void)
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc)
 {
     Assert(c != NULL);
-    (cType=c)->SetParent(this);
+    (cType=c)->set_parent(this);
 
     return;
 }
@@ -499,7 +500,7 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc)
 void NewExpr::DoCheck(void)
 {
     if (GetClass(cType) == NULL) {
-        ReportError::IdentifierNotDeclared(cType->get_id(),
+        ReportError::IdentifierNotDeclared(cType->id(),
                                            LookingForClass);
     }
 
@@ -519,8 +520,8 @@ void NewArrayExpr::DoCheck(void)
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc)
 {
     Assert(sz != NULL && et != NULL);
-    (size=sz)->SetParent(this);
-    (elemType=et)->SetParent(this);
+    (size=sz)->set_parent(this);
+    (elemType=et)->set_parent(this);
 
     return;
 }
