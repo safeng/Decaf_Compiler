@@ -391,7 +391,20 @@ void FieldAccess::DoCheck(void)
         This *th = dynamic_cast<This*>(base);
         if (th == NULL) {
             base->Check(); // check base
-            ReportError::InaccessibleField(field, base->type());
+			// report error based on type of base
+			Type * baseType = base->type();
+			if(baseType != Type::errorType)
+			{
+				if(dynamic_cast<NamedType*>(baseType) != NULL) // NamedType
+				{
+					ReportError::InaccessibleField(field,
+													base->type());
+				}else // Other types
+				{
+                    ReportError::FieldNotFoundInBase(field,
+                                                     base->type());
+				}
+			}
         } else {
             // Even with this.field, we should check whether we are in a class scope
             th->Check();
