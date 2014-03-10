@@ -212,16 +212,12 @@ RelationalExpr::RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) :
 void EqualityExpr::DoCheck(void)
 {
     OperandCheck();
-    if (left_->type() == Type::errorType ||
-        right_->type() == Type::errorType) {
-        type_ = Type::errorType;
-    } else if (left_->type() == right_->type()) {
-        type_ = Type::boolType;
-    } else {
+    if (!left_->type()->IsCompatibleWith(right_->type()) &&
+        !right_->type()->IsCompatibleWith(left_->type())) {
         ReportError::IncompatibleOperands(op_, left_->type(),
                                           right_->type());
-        type_ = Type::errorType;
     }
+    type_ = Type::boolType;
 
     return;
 }
@@ -335,18 +331,17 @@ void ArrayAccess::DoCheck(void)
 {
     base_->Check();
     subscript_->Check();
-    if (base_->type() == Type::errorType ||
-        subscript_->type() == Type::errorType) {
+    if (base_->type() == Type::errorType) {
         type_ = Type::errorType;
-    } else {
-        if (dynamic_cast<ArrayType*>(base_->type()) == NULL) {
-            ReportError::BracketsOnNonArray(base_);
-            type_ = Type::errorType;
-        }
-        if (subscript_->type() != Type::intType) {
-            ReportError::SubscriptNotInteger(subscript_);
-            type_ = Type::errorType;
-        }
+    } else if (dynamic_cast<ArrayType*>(base_->type()) == NULL) {
+        ReportError::BracketsOnNonArray(base_);
+        type_ = Type::errorType;
+    }
+    if (subscript_->type() == Type::errorType) {
+        type_ = Type::errorType;
+    } else if (subscript_->type() != Type::intType) {
+        ReportError::SubscriptNotInteger(subscript_);
+        type_ = Type::errorType;
     }
     // Assign the type of base to whole expression
     if (type_ == NULL) {
@@ -423,7 +418,9 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
 {
     Assert(f != NULL && a != NULL);
     base = b;
-    if (base) base->set_parent(this);
+    if (base != NULL) {
+        base->set_parent(this);
+    }
     (field=f)->set_parent(this);
     (actuals=a)->set_parent_all(this);
 
@@ -451,6 +448,7 @@ void Call::DoCheck(void)
                 // var.func()
                 NamedType *nt = dynamic_cast<NamedType*>(base->type());
                 ClassDecl *c = nt == NULL ? NULL : GetClass(nt);
+                InterfaceDecl *itf = nt == NULL ? NULL : GetInterface(nt);
                 FnDecl *f = c == NULL ? NULL : c->GetMemberFn(field->name());
                 if (f == NULL) {
                     ReportError::FieldNotFoundInBase(field,

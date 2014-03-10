@@ -1,8 +1,4 @@
-/**** ast_decl.cc - ASTs of declarations ******************************
- *
- * Copyright © 2014 Shuang Feng, Hongjiu Zhang
- *
- * All rights reserved.                                              */
+/**** ast_decl.cc - ASTs of declarations *****************************/
 
 #include "ast_decl.h"
 #include "ast_type.h"
@@ -41,10 +37,10 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
 void VarDecl::DoCheck(void)
 {
     type_->Check();
-	if(!type_->is_valid()) // change type to errorType to avoid cascading errors
-	{
-		type_ = Type::errorType;
-	}
+    if (!type_->is_valid()) {
+        // change type to errorType to avoid cascading errors
+        type_ = Type::errorType;
+    }
     return;
 }
 
@@ -258,6 +254,21 @@ InterfaceDecl::InterfaceDecl(Identifier *name, List<Decl*> *members) :
 Hashtable<Decl*> *InterfaceDecl::sym_table(void)
 {
     return sym_table_;
+}
+
+FnDecl *InterfaceDecl::GetMemberFn(char *n)
+{
+    return dynamic_cast<FnDecl*>(sym_table_->Lookup(n));
+}
+
+FnDecl *InterfaceDecl::GetFn(Identifier *i)
+{
+    FnDecl *memFn = GetMemberFn(i->name());
+    if (memFn == NULL) {
+        memFn = parent()->GetFn(i); // global function
+    }
+
+    return memFn;
 }
 
 

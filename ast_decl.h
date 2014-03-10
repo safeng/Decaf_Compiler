@@ -61,11 +61,11 @@ class ClassDecl : public Decl
                   List<NamedType*> *impl, List<Decl*> *memb);
 
         Hashtable<Decl*> *sym_table(void);
+
         ClassDecl *GetCurrentClass(void);
         VarDecl *GetMemberVar(char *name);
-        FnDecl *GetMemberFn(char *name);
-
         VarDecl *GetVar(Identifier *i);
+        FnDecl *GetMemberFn(char *name);
         FnDecl *GetFn(Identifier *i);
         bool IsTypeCompatibleWith(NamedType *baseClass); // test whether this class is compatible with baseClass
 };
@@ -83,6 +83,9 @@ class InterfaceDecl : public Decl
         InterfaceDecl(Identifier *name, List<Decl*> *members);
 
         Hashtable<Decl*> *sym_table(void);
+
+        FnDecl *GetMemberFn(char *name);
+        FnDecl *GetFn(Identifier *i);
 };
 
 class FnDecl : public Decl
