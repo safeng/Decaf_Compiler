@@ -118,11 +118,11 @@ void ClassDecl::DoCheck(void)
     for (int i = 0; i < implements_->NumElements(); i++) {
         NamedType *nt = implements_->Nth(i);
         InterfaceDecl *intd = parent()->GetInterface(nt);
-        intd->Check(); // construct sym table for interface
         if (intd == NULL) {
             ReportError::IdentifierNotDeclared(nt->id(),
                                                LookingForInterface);
         } else {
+            intd->Check(); // construct sym table for interface
             Hashtable<Decl*> *sym_impl = intd->sym_table();
             Iterator<Decl*> iter = sym_impl->GetIterator();
             Decl *decl = iter.GetNextValue();
@@ -137,7 +137,7 @@ void ClassDecl::DoCheck(void)
                     }
                 } else {
                     FnDecl * implDecl = dynamic_cast<FnDecl*>(decl);
-                    if(!extDecl->IsSigEquivalentTo(implDecl)) {
+                    if (!extDecl->IsSigEquivalentTo(implDecl)) {
                         ReportError::OverrideMismatch(extDecl);
                         // keep the signiture from Interface
                         sym_table_->Enter(name, decl);
@@ -351,20 +351,17 @@ void FnDecl::CheckCallCompatibility(List<Expr*> *actuals)
     // Must ensure that we check node first then check type
     int sizeNeed = formals_->NumElements();
     int sizeProvide = actuals->NumElements();
-    if(sizeNeed != sizeProvide)
-    {
+    if (sizeNeed != sizeProvide) {
         ReportError::NumArgsMismatch(id(), sizeNeed, sizeProvide);
     }
     int i = 0, j = 0;
-    while(i < sizeNeed && j < sizeProvide)
-    {
+    while(i < sizeNeed && j < sizeProvide) {
         // check formals and actuals
         Expr *actExpr = actuals->Nth(j);
         Type *actType = actExpr->type();
         Type *formType = formals_->Nth(i)->type();
-        if(!actType->IsCompatibleWith(formType))
-        {
-            ReportError::ArgMismatch(actExpr, i, formType, actType);
+        if(!actType->IsCompatibleWith(formType)) {
+            ReportError::ArgMismatch(actExpr, i + 1, actType, formType);
         }
         ++i; ++j;
     }

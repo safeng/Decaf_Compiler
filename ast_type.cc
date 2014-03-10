@@ -16,16 +16,26 @@ Type *Type::nullType   = new Type("null");
 Type *Type::stringType = new Type("string");
 Type *Type::errorType  = new Type("error");
 
+Type::Type(void) : Node()
+{
+    is_valid_ = true;
+
+    return;
+}
+
 Type::Type(const char *n)
 {
     Assert(n);
     name_ = strdup(n);
+    is_valid_ = true;
 
     return;
 }
 
 Type::Type(yyltype loc) : Node(loc)
 {
+    is_valid_ = true;
+
     return;
 }
 
@@ -39,6 +49,11 @@ std::ostream& operator<<(std::ostream& out, Type *t)
     out << t->name();
 
     return out;
+}
+
+bool Type::is_valid(void)
+{
+    return is_valid_;
 }
 
 bool Type::IsEquivalentTo(Type *other)
@@ -65,6 +80,7 @@ void NamedType::DoCheck(void)
 {
     if (GetClass(this) == NULL) {
         ReportError::IdentifierNotDeclared(id_, LookingForType);
+        is_valid_ = false;
     }
 
     return;
@@ -75,6 +91,7 @@ NamedType::NamedType(Identifier *i) : Type(*i->location())
     Assert(i != NULL);
     (id_ = i)->set_parent(this);
     name_ = id_->name();
+    is_valid_ = true;
 
     return;
 }
@@ -113,6 +130,30 @@ bool NamedType::IsCompatibleWith(Type *other)
 }
 
 /*** class ArrayType *************************************************/
+
+void ArrayType::DoCheck(void)
+{
+    elem_->Check();
+    if (elem_->is_valid()) {
+        is_valid_ = false;
+    }
+
+    return;
+}
+
+ArrayType::ArrayType(Type *t) : Type()
+{
+    Assert(t != NULL);
+    (elem_ = t)->set_parent(this);
+    name_ = strdup(elem_->name());
+    name_ = (char*)realloc(name_, strlen(name_) + 3);
+    if (name_ == NULL) {
+        exit(137);
+    }
+    strcat(name_, "[]"); // construct names
+
+    return;
+}
 
 ArrayType::ArrayType(yyltype loc, Type *t) : Type(loc)
 {

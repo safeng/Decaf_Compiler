@@ -12,6 +12,7 @@ class Type : public Node
 {
     protected:
         char *name_;
+        bool is_valid_;
 
     public :
         // Static built-in types
@@ -23,10 +24,12 @@ class Type : public Node
         static Type *stringType;
         static Type *errorType;
 
+        Type(void);
         Type(const char *str);
         Type(yyltype loc);
 
         char *name(void);
+        bool is_valid(void);
 
         friend std::ostream& operator<<(std::ostream& out, Type *t);
 
@@ -54,7 +57,10 @@ class ArrayType : public Type
     protected:
         Type *elem_; // ArrayType has a Type associated with it
 
+        void DoCheck(void);
+
     public:
+        ArrayType(Type *t);
         ArrayType(yyltype loc, Type *t);
 
         Type *elem(void);

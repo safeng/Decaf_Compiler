@@ -41,7 +41,7 @@ EmptyExpr::EmptyExpr(void) : Expr()
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc)
 {
     value_ = val;
-    type_  = Type::intType;
+    type_ = Type::intType;
 
     return;
 }
@@ -51,7 +51,7 @@ IntConstant::IntConstant(yyltype loc, int val) : Expr(loc)
 DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc)
 {
     value_ = val;
-    type_  = Type::doubleType;
+    type_ = Type::doubleType;
 
     return;
 }
@@ -61,7 +61,7 @@ DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc)
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc)
 {
     value_ = val;
-    type_  = Type::boolType;
+    type_ = Type::boolType;
 
     return;
 }
@@ -73,7 +73,7 @@ StringConstant::StringConstant(yyltype loc, const char *val) :
 {
     Assert(val != NULL);
     value_ = strdup(val);
-    type_  = Type::stringType;
+    type_ = Type::stringType;
 
     return;
 }
@@ -191,7 +191,7 @@ void RelationalExpr::DoCheck(void)
     } else if (left_->type() == right_->type() &&
                (left_->type() == Type::intType ||
                 left_->type() == Type::doubleType)) {
-        type_ = left_->type();
+        type_ = Type::boolType;
     } else {
         ReportError::IncompatibleOperands(op_, left_->type(),
                                           right_->type());
@@ -388,6 +388,9 @@ void FieldAccess::DoCheck(void)
                                                LookingForVariable);
         } else {
             type_ = v->type();
+            if (type_->is_valid()) {
+                type_ = Type::errorType;
+            }
         }
     } else { // must be this.field
         This *th = dynamic_cast<This*>(base);
@@ -444,24 +447,28 @@ void Call::DoCheck(void)
     } else {
         base->Check();
         if (base->type() != Type::errorType) {
-            if (dynamic_cast<This*>(base) == NULL) // var.func()
-            {
+            if (dynamic_cast<This*>(base) == NULL) {
+                // var.func()
                 NamedType *nt = dynamic_cast<NamedType*>(base->type());
                 if (nt == NULL) {
                     ReportError::FieldNotFoundInBase(field, base->type());
                 } else {
                     ClassDecl *c = GetClass(nt);
-                    FnDecl *f = c->GetMemberFn(field->name());
-                    if (f == NULL) {
-                        ReportError::FieldNotFoundInBase
-                            (field, base->type());
+                    if (c == NULL) {
+                        ReportError::FieldNotFoundInBase(field, base->type());
                     } else {
-                        type_ = f->return_type();
-                        calledFn = f;
+                        FnDecl *f = c->GetMemberFn(field->name());
+                        if (f == NULL) {
+                            ReportError::FieldNotFoundInBase(field,
+                                                             base->type());
+                        } else {
+                            type_ = f->return_type();
+                            calledFn = f;
+                        }
                     }
                 }
-            } else // this.func()
-            {
+            } else {
+                // this.func()
                 ClassDecl *c = GetCurrentClass(); // must exist
                 FnDecl *f = c->GetMemberFn(field->name());
                 if (f == NULL) {
@@ -480,8 +487,7 @@ void Call::DoCheck(void)
     }
 
     // check type agreement between caller and callee. Formals vs. Actuals
-    if(calledFn != NULL)
-    {
+    if (calledFn != NULL) {
         calledFn->CheckCallCompatibility(actuals);
     }
     return;
@@ -511,8 +517,18 @@ void NewExpr::DoCheck(void)
 void NewArrayExpr::DoCheck(void)
 {
     size->Check();
-    // TODO: Check the type of size
+    if (size->type() != Type::errorType &&
+        size->type() != Type::intType) {
+        ReportError::NewArraySizeNotInteger(size);
+        type_ = Type::errorType;
+    }
     elemType->Check();
+    if (size->type() == Type::errorType) {
+        type_ = Type::errorType;
+    }
+    if (type_ != Type::errorType) {
+        type_ = new ArrayType(elemType);
+    }
 
     return;
 }

@@ -156,8 +156,10 @@ void ConditionalStmt::DoCheck(void)
     body->Check();
 
     // testExpr must be boolean type
-    if(test->type() != Type::boolType)
+    if (test->type() != Type::boolType &&
+        test->type() != Type::errorType) {
         ReportError::TestNotBoolean(test);
+    }
 
     return;
 }
@@ -270,7 +272,7 @@ void PrintStmt::DoCheck(void)
         if (!argType->IsEquivalentTo(Type::stringType) &&
             !argType->IsEquivalentTo(Type::intType) &&
             !argType->IsEquivalentTo(Type::boolType)) {
-            ReportError::PrintArgMismatch(arg, i, argType);
+            ReportError::PrintArgMismatch(arg, i + 1, argType);
         }
     }
 
