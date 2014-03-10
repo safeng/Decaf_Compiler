@@ -125,7 +125,7 @@ bool NamedType::IsCompatibleWith(Type *other)
 void ArrayType::DoCheck(void)
 {
     elem_->Check();
-    if (elem_->is_valid()) {
+    if (!elem_->is_valid()) {
         is_valid_ = false;
     }
 
