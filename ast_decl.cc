@@ -72,6 +72,7 @@ void ClassDecl::MergeSymbolTable(ClassDecl *base)
             fnChild->Check();
             // check return type and formals
             if (!fnChild->IsSigEquivalentTo(fnBase)) {
+                sym_table_->Enter(name, fnBase);
                 ReportError::OverrideMismatch(fnChild);
             }
         }
@@ -136,10 +137,10 @@ void ClassDecl::DoCheck(void)
                     FnDecl * implDecl = dynamic_cast<FnDecl*>(decl);
                     if (!extDecl->IsSigEquivalentTo(implDecl)) {
                         ReportError::OverrideMismatch(extDecl);
-						if(!hideError) {
-							ReportError::InterfaceNotImplemented(this, nt);
-							hideError = true;
-						}
+                        if(!hideError) {
+                            ReportError::InterfaceNotImplemented(this, nt);
+                            hideError = true;
+                        }
                     }
                 }
                 decl = iter.GetNextValue();
@@ -386,7 +387,7 @@ void FnDecl::CheckCallCompatibility(Identifier *caller,
 }
 
 LengthFn::LengthFn(yyltype loc):
-	FnDecl(new Identifier(loc, "length"), Type::intType, new List<VarDecl*>)
+    FnDecl(new Identifier(loc, "length"), Type::intType, new List<VarDecl*>)
 {
-	return;
+    return;
 }
