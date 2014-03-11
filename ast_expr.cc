@@ -472,9 +472,26 @@ void Call::DoCheck(void)
                 ClassDecl *c = nt == NULL ? NULL : GetClass(nt);
                 InterfaceDecl *itf = nt == NULL ? NULL : GetInterface(nt);
                 FnDecl *f = c == NULL ? NULL : c->GetMemberFn(field->name());
+				if(f == NULL && itf != NULL) // check interface
+				{
+					f = itf->GetMemberFn(field->name());
+				}
                 if (f == NULL) {
-                    ReportError::FieldNotFoundInBase(field,
-                                                     base->type());
+					// Check another possibility: array.length()
+					if(dynamic_cast<ArrayType*>(base->type()))
+					{
+						if(strcmp(field->name(),"length")==0)
+						{
+							f = new LengthFn(
+									*field->location());
+							type_ = f->return_type();
+							calledFn = f;
+						}else
+							ReportError::FieldNotFoundInBase(field,
+                                                     		base->type());
+					}else
+						ReportError::FieldNotFoundInBase(field,
+                                                     	base->type());
                 } else {
                     type_ = f->return_type();
                     calledFn = f;
@@ -499,7 +516,7 @@ void Call::DoCheck(void)
     }
 
     // Check type agreement between caller and callee.
-    if (strcmp("length", field->name()) && calledFn != NULL) {
+    if (calledFn != NULL) {
         calledFn->CheckCallCompatibility(field, actuals);
     }
 

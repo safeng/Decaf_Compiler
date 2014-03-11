@@ -383,7 +383,7 @@ void FnDecl::CheckCallCompatibility(Identifier *caller,
 }
 
 LengthFn::LengthFn(yyltype loc):
-	:FnDecl(new Identifier(loc, "length"), type::intType, new List<VarDecl*>)
+	FnDecl(new Identifier(loc, "length"), Type::intType, new List<VarDecl*>)
 {
 	return;
 }

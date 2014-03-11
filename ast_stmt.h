@@ -19,6 +19,7 @@
 
 class Decl;
 class FnDecl;
+class LengthFn;
 class VarDecl;
 class ClassDecl;
 class InterfaceDecl;
