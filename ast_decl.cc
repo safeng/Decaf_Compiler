@@ -73,8 +73,6 @@ void ClassDecl::MergeSymbolTable(ClassDecl *base)
             // check return type and formals
             if (!fnChild->IsSigEquivalentTo(fnBase)) {
                 ReportError::OverrideMismatch(fnChild);
-                // replace it with definition in superclass
-                sym_table_->Enter(name, d);
             }
         }
         d = iter.GetNextValue();
@@ -138,8 +136,10 @@ void ClassDecl::DoCheck(void)
                     FnDecl * implDecl = dynamic_cast<FnDecl*>(decl);
                     if (!extDecl->IsSigEquivalentTo(implDecl)) {
                         ReportError::OverrideMismatch(extDecl);
-                        // keep the signiture from Interface
-                        sym_table_->Enter(name, decl);
+						if(!hideError) {
+							ReportError::InterfaceNotImplemented(this, nt);
+							hideError = true;
+						}
                     }
                 }
                 decl = iter.GetNextValue();
