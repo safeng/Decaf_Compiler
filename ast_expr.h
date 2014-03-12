@@ -111,6 +111,10 @@ class CompoundExpr : public Expr
 
 class ArithmeticExpr : public CompoundExpr
 {
+    private:
+        void UnaryCheck(void);
+        void BinaryCheck(void);
+
     protected:
         void DoCheck(void);
 

@@ -138,31 +138,56 @@ CompoundExpr::CompoundExpr(Operator *op, Expr *rhs) :
 
 /*** class ArithmeticExpr ********************************************/
 
+void ArithmeticExpr::UnaryCheck(void)
+{
+    if (right_->type() == Type::intType ||
+        right_->type() == Type::doubleType ||
+        right_->type() == Type::errorType) {
+        type_ = right_->type();
+    } else {
+        ReportError::IncompatibleOperand(op_, right_->type());
+        type_ = Type::errorType;
+    }
+
+    return;
+}
+
+void ArithmeticExpr::BinaryCheck(void)
+{
+    bool report = false;
+    // Left is not valid type.
+    report = report || (left_->type() != Type::intType &&
+                        left_->type() != Type::doubleType &&
+                        left_->type() != Type::errorType);
+    // Right is not valid type.
+    report = report || (right_->type() != Type::intType &&
+                        right_->type() != Type::doubleType &&
+                        right_->type() != Type::errorType);
+    // Both operand types are not the same, error excepted.
+    report = report || (left_->type() != Type::errorType &&
+                        right_->type() != Type::errorType &&
+                        left_->type() != right_->type());
+    if (report) {
+        ReportError::IncompatibleOperands(op_, left_->type(),
+                                          right_->type());
+        type_ = Type::errorType;
+    } else if (left_->type() == Type::errorType ||
+               right_->type() == Type::errorType) {
+        type_ = Type::errorType;
+    } else {
+        type_ = left_->type();
+    }
+
+    return;
+}
+
 void ArithmeticExpr::DoCheck(void)
 {
     OperandCheck();
     if (left_ == NULL) {
-        if (right_->type() == Type::intType ||
-            right_->type() == Type::doubleType ||
-            right_->type() == Type::errorType) {
-            type_ = right_->type();
-        } else {
-            ReportError::IncompatibleOperand(op_, right_->type());
-            type_ = Type::errorType;
-        }
+        UnaryCheck();
     } else {
-        if (left_->type() == Type::errorType ||
-            right_->type() == Type::errorType) {
-            type_ = Type::errorType;
-        } else if (left_->type() == right_->type() &&
-                   (left_->type() == Type::intType ||
-                    left_->type() == Type::doubleType)) {
-            type_ = left_->type();
-        } else {
-            ReportError::IncompatibleOperands(op_, left_->type(),
-                                              right_->type());
-            type_ = Type::errorType;
-        }
+        BinaryCheck();
     }
 
     return;
@@ -478,26 +503,26 @@ void Call::DoCheck(void)
                 ClassDecl *c = nt == NULL ? NULL : GetClass(nt);
                 InterfaceDecl *itf = nt == NULL ? NULL : GetInterface(nt);
                 FnDecl *f = c == NULL ? NULL : c->GetMemberFn(field->name());
-				if(f == NULL && itf != NULL) // check interface
-				{
-					f = itf->GetMemberFn(field->name());
-				}
+                if(f == NULL && itf != NULL) // check interface
+                {
+                    f = itf->GetMemberFn(field->name());
+                }
                 if (f == NULL) {
-					// Check another possibility: array.length()
-					if(dynamic_cast<ArrayType*>(base->type()))
-					{
-						if(strcmp(field->name(),"length")==0)
-						{
-							f = new LengthFn(
-									*field->location());
-							type_ = f->return_type();
-							calledFn = f;
-						}else
-							ReportError::FieldNotFoundInBase(field,
-                                                     		base->type());
-					}else
-						ReportError::FieldNotFoundInBase(field,
-                                                     	base->type());
+                    // Check another possibility: array.length()
+                    if(dynamic_cast<ArrayType*>(base->type()))
+                    {
+                        if(strcmp(field->name(),"length")==0)
+                        {
+                            f = new LengthFn(
+                                *field->location());
+                            type_ = f->return_type();
+                            calledFn = f;
+                        }else
+                            ReportError::FieldNotFoundInBase(field,
+                                                             base->type());
+                    }else
+                        ReportError::FieldNotFoundInBase(field,
+                                                         base->type());
                 } else {
                     type_ = f->return_type();
                     calledFn = f;
