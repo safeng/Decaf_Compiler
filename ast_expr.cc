@@ -154,11 +154,10 @@ void ArithmeticExpr::UnaryCheck(void)
 
 void ArithmeticExpr::BinaryCheck(void)
 {
-    bool report = false;
     // Left is not valid type.
-    report = report || (left_->type() != Type::intType &&
-                        left_->type() != Type::doubleType &&
-                        left_->type() != Type::errorType);
+    bool report = (left_->type() != Type::intType &&
+                   left_->type() != Type::doubleType &&
+                   left_->type() != Type::errorType);
     // Right is not valid type.
     report = report || (right_->type() != Type::intType &&
                         right_->type() != Type::doubleType &&
@@ -213,9 +212,9 @@ void RelationalExpr::DoCheck(void)
 
     OperandCheck();
     // Left is not valid type.
-    report = report || (left_->type() != Type::intType &&
-                        left_->type() != Type::doubleType &&
-                        left_->type() != Type::errorType);
+    report = (left_->type() != Type::intType &&
+              left_->type() != Type::doubleType &&
+              left_->type() != Type::errorType);
     // Right is not valid type.
     report = report || (right_->type() != Type::intType &&
                         right_->type() != Type::doubleType &&
@@ -282,10 +281,9 @@ void LogicalExpr::UnaryCheck(void)
 
 void LogicalExpr::BinaryCheck(void)
 {
-    bool report = false;
     // Left is not valid type.
-    report = report || (left_->type() != Type::boolType &&
-                        left_->type() != Type::errorType);
+    bool report = (left_->type() != Type::boolType &&
+                   left_->type() != Type::errorType);
     // Right is not valid type.
     report = report || (right_->type() != Type::boolType &&
                         right_->type() != Type::errorType);
@@ -335,12 +333,12 @@ void AssignExpr::DoCheck(void)
     if (left_->type() == Type::errorType ||
         right_->type() == Type::errorType) {
         type_ = Type::errorType;
-    } else if (right_->type()->IsCompatibleWith(left_->type())) {
-        type_ = left_->type();
     } else {
-        ReportError::IncompatibleOperands(op_, left_->type(),
-                                          right_->type());
-        type_ = Type::errorType;
+        type_ = left_->type();
+        if (!right_->type()->IsCompatibleWith(left_->type())) {
+            ReportError::IncompatibleOperands(op_, left_->type(),
+                                              right_->type());
+        }
     }
 
     return;
@@ -418,77 +416,91 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f) :
     return;
 }
 
-void FieldAccess::DoCheck(void)
+void FieldAccess::UnaryCheck(void)
 {
-    type_ = Type::errorType; // default: set as error type
-    if (base == NULL) {
-        VarDecl *v = GetVar(field);
+    VarDecl *v = GetVar(field);
+    if (v == NULL) {
+        ReportError::IdentifierNotDeclared(field, LookingForVariable);
+        type_ = Type::errorType;
+    } else {
+        v->Check();
+        type_ = v->type();
+    }
+
+    return;
+}
+
+void FieldAccess::NativeAccessCheck(void)
+{
+    ClassDecl *c = GetCurrentClass();
+    VarDecl *v = c == NULL ? NULL : c->GetMemberVar(field->name());
+    if (v == NULL) {
+        ReportError::FieldNotFoundInBase(field, base->type());
+        type_ = Type::errorType;
+    } else {
+        v->Check();
+        type_ = v->type();
+    }
+
+    return;
+}
+
+void FieldAccess::ForeignAccessCheck(void)
+{
+    Type *bt = base->type();
+    NamedType *bnt = dynamic_cast<NamedType*>(bt);
+    ClassDecl *c = bnt == NULL ? NULL : GetClass(bnt);
+    if (c == NULL) {
+        ReportError::FieldNotFoundInBase(field, bt);
+        type_ = Type::errorType;
+    } else {
+        VarDecl *v;
+        c->Check();
+        v = c->GetMemberVar(field->name());
         if (v == NULL) {
-            ReportError::IdentifierNotDeclared(field,
-                                               LookingForVariable);
+            ReportError::FieldNotFoundInBase(field, bt);
+            type_ = Type::errorType;
         } else {
             v->Check();
-            type_ = v->type();
-            if (!type_->is_valid()) {
+            if (c != GetCurrentClass()) {
+                ReportError::InaccessibleField(field, bt);
                 type_ = Type::errorType;
-            }
-        }
-    } else { // must be this.field
-        This *th = dynamic_cast<This*>(base);
-        if (th == NULL) {
-            base->Check(); // check base
-            // report error based on type of base
-            Type * baseType = base->type();
-            if (baseType != Type::errorType) {
-                NamedType * classType = dynamic_cast<NamedType*>(baseType);
-                if (classType != NULL) {
-                    ClassDecl *c = GetClass(classType);
-                    if (c != NULL) {
-						c->Check();
-                        VarDecl *v = c->GetMemberVar(field->name());
-                        if (v == NULL) {
-                            ReportError::FieldNotFoundInBase(field,
-                                                             base->type());
-                        } else {
-                            v->Check();
-                            if (GetCurrentClass() == c) {
-                                type_ = v->type();
-                            } else {
-                                ReportError::InaccessibleField(field,
-                                                               base->type());
-                            }
-                        }
-                    } else {
-                        ReportError::FieldNotFoundInBase(field,
-                                                         base->type());
-                    }
-                } else {
-                    ReportError::FieldNotFoundInBase(field,
-                                                     base->type());
-                }
-            }
-        } else {
-            // Even with this.field, we should check whether we are in a class scope
-            th->Check();
-            ClassDecl *c = GetCurrentClass();
-            if (c != NULL)
-            {
-				c->Check();
-                //NamedType *t = new NamedType(c->id());
-                VarDecl *v = c->GetMemberVar(field->name());
-                if (v == NULL) {
-                    ReportError::FieldNotFoundInBase(field,
-                                                     base->type());
-                } else {
-					v->Check();
-                    type_ = v->type();
-                }
+            } else {
+                type_ = v->type();
             }
         }
     }
 
     return;
 }
+
+void FieldAccess::BinaryCheck(void)
+{
+    if (dynamic_cast<This*>(base) == NULL) {
+        ForeignAccessCheck();
+    } else {
+        NativeAccessCheck();
+    }
+
+    return;
+}
+
+void FieldAccess::DoCheck(void)
+{
+    if (base == NULL) {
+        UnaryCheck();
+    } else {
+        base->Check();
+        if (base->type() != Type::errorType) {
+            BinaryCheck();
+        } else {
+            type_ = Type::errorType;
+        }
+    }
+
+    return;
+}
+
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
     Expr(loc)
@@ -508,9 +520,12 @@ void Call::UnaryCheck(void)
 {
     FnDecl *f = GetFn(field);
     if (f != NULL) {
-		f->Check();
+        f->Check();
         f->CheckCallCompatibility(field, actuals);
         type_ = f->return_type();
+        if (!type_->is_valid()) {
+            type_ = Type::errorType;
+        }
     } else {
         ReportError::IdentifierNotDeclared(field, LookingForFunction);
         type_ = Type::errorType;
@@ -552,9 +567,12 @@ void Call::BinaryCheck(void)
 void Call::CallCheck(FnDecl *f)
 {
     if (f != NULL) {
-		f->Check();
+        f->Check();
         f->CheckCallCompatibility(field, actuals);
         type_ = f->return_type();
+        if (!type_->is_valid()) {
+            type_ = Type::errorType;
+        }
     } else {
         ReportError::FieldNotFoundInBase(field, base->type());
         type_ = Type::errorType;

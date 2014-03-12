@@ -201,6 +201,12 @@ class ArrayAccess : public LValue
  * and sort it out later. */
 class FieldAccess : public LValue
 {
+    private:
+        void UnaryCheck(void);
+        void NativeAccessCheck(void);
+        void ForeignAccessCheck(void);
+        void BinaryCheck(void);
+
     protected:
         Expr *base; // will be NULL if no explicit base
         Identifier *field;
