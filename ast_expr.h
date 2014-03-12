@@ -145,6 +145,10 @@ class EqualityExpr : public CompoundExpr
 
 class LogicalExpr : public CompoundExpr
 {
+    private:
+        void UnaryCheck(void);
+        void BinaryCheck(void);
+
     protected:
         void DoCheck(void);
 

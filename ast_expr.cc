@@ -267,29 +267,44 @@ const char *EqualityExpr::GetPrintNameForNode(void)
 
 /*** class LogicalExpr ***********************************************/
 
+void LogicalExpr::UnaryCheck(void)
+{
+    if (right_->type() == Type::boolType ||
+        right_->type() == Type::errorType) {
+        type_ = right_->type();
+    } else {
+        ReportError::IncompatibleOperand(op_, right_->type());
+        type_ = Type::errorType;
+    }
+
+    return;
+}
+
+void LogicalExpr::BinaryCheck(void)
+{
+    bool report = false;
+    // Left is not valid type.
+    report = report || (left_->type() != Type::boolType &&
+                        left_->type() != Type::errorType);
+    // Right is not valid type.
+    report = report || (right_->type() != Type::boolType &&
+                        right_->type() != Type::errorType);
+    if (report) {
+        ReportError::IncompatibleOperands(op_, left_->type(),
+                                          right_->type());
+    }
+    type_ = Type::boolType;
+
+    return;
+}
+
 void LogicalExpr::DoCheck(void)
 {
     OperandCheck();
     if (left_ == NULL) {
-        if (right_->type() == Type::boolType ||
-            right_->type() == Type::errorType) {
-            type_ = Type::boolType;
-        } else {
-            ReportError::IncompatibleOperand(op_, right_->type());
-            type_ = Type::errorType;
-        }
+        UnaryCheck();
     } else {
-        if (left_->type() == Type::errorType ||
-            right_->type() == Type::errorType) {
-            type_ = Type::errorType;
-        } else if (left_->type() == Type::boolType &&
-                   right_->type() == Type::boolType) {
-            type_ = Type::boolType;
-        } else {
-            ReportError::IncompatibleOperands(op_, left_->type(),
-                                              right_->type());
-            type_ = Type::errorType;
-        }
+        BinaryCheck();
     }
 
     return;
