@@ -423,11 +423,11 @@ void FieldAccess::DoCheck(void)
     type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
         VarDecl *v = GetVar(field);
-		v->Check();
         if (v == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForVariable);
         } else {
+            v->Check();
             type_ = v->type();
             if (!type_->is_valid()) {
                 type_ = Type::errorType;
@@ -450,8 +450,8 @@ void FieldAccess::DoCheck(void)
                             ReportError::FieldNotFoundInBase(field,
                                                              base->type());
                         } else {
+                            v->Check();
                             if (GetCurrentClass() == c) {
-                                v->Check();
                                 type_ = v->type();
                             } else {
                                 ReportError::InaccessibleField(field,
