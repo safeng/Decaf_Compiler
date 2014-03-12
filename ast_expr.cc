@@ -423,6 +423,7 @@ void FieldAccess::DoCheck(void)
     type_ = Type::errorType; // default: set as error type
     if (base == NULL) {
         VarDecl *v = GetVar(field);
+		v->Check();
         if (v == NULL) {
             ReportError::IdentifierNotDeclared(field,
                                                LookingForVariable);
@@ -443,6 +444,7 @@ void FieldAccess::DoCheck(void)
                 if (classType != NULL) {
                     ClassDecl *c = GetClass(classType);
                     if (c != NULL) {
+						c->Check();
                         VarDecl *v = c->GetMemberVar(field->name());
                         if (v == NULL) {
                             ReportError::FieldNotFoundInBase(field,
@@ -471,12 +473,14 @@ void FieldAccess::DoCheck(void)
             ClassDecl *c = GetCurrentClass();
             if (c != NULL)
             {
+				c->Check();
                 //NamedType *t = new NamedType(c->id());
                 VarDecl *v = c->GetMemberVar(field->name());
                 if (v == NULL) {
                     ReportError::FieldNotFoundInBase(field,
                                                      base->type());
                 } else {
+					v->Check();
                     type_ = v->type();
                 }
             }
@@ -504,6 +508,7 @@ void Call::UnaryCheck(void)
 {
     FnDecl *f = GetFn(field);
     if (f != NULL) {
+		f->Check();
         f->CheckCallCompatibility(field, actuals);
         type_ = f->return_type();
     } else {
@@ -535,8 +540,8 @@ void Call::BinaryCheck(void)
         NamedType *nt = dynamic_cast<NamedType*>(base->type());
         ClassDecl *c = nt == NULL ? NULL : GetClass(nt);
         InterfaceDecl *itf = nt == NULL ? NULL : GetInterface(nt);
-        FnDecl *f = (c != NULL   ? c->GetMemberFn(field->name()) :
-                     itf != NULL ? itf->GetMemberFn(field->name()) :
+        FnDecl *f = (c != NULL   ? (c->Check(), c->GetMemberFn(field->name())) :
+                     itf != NULL ? (itf->Check(), itf->GetMemberFn(field->name())) :
                      /* Else */    NULL);
         CallCheck(f);
     }
@@ -547,6 +552,7 @@ void Call::BinaryCheck(void)
 void Call::CallCheck(FnDecl *f)
 {
     if (f != NULL) {
+		f->Check();
         f->CheckCallCompatibility(field, actuals);
         type_ = f->return_type();
     } else {
