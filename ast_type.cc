@@ -59,7 +59,6 @@ bool Type::is_valid(void)
 bool Type::IsEquivalentTo(Type *other)
 {
     return (this == Type::errorType ||
-            other == Type::errorType ||
             strcmp(name_, other->name()) == 0);
 }
 
@@ -107,14 +106,12 @@ bool NamedType::IsCompatibleWith(Type *other)
     } else if (B == NULL) {
         comp = false;
     } else {
-		// Can be interface
+        // This type might be Class or Interface.
         ClassDecl *c = GetClass(this);
         if (c != NULL) {
-            // Search base class and interfaces
             comp = c->IsTypeCompatibleWith(B);
         } else {
-			// this must be interface
-            comp = false;
+            comp = false; // No interface has supertypes.
         }
     }
 

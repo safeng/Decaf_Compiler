@@ -500,75 +500,72 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) :
     return;
 }
 
-void Call::DoCheck(void)
+void Call::UnaryCheck(void)
 {
-    type_ = Type::errorType; // default: set as error type
-    FnDecl *calledFn = NULL; // definition of function to be called
-    if (base == NULL) {
-        // Omit this or call a global function
-        FnDecl *f = GetFn(field);
-        if (f == NULL) {
-            ReportError::IdentifierNotDeclared(field,
-                                               LookingForFunction);
-        } else {
-            type_ = f->return_type();
-            calledFn = f;
-        }
+    FnDecl *f = GetFn(field);
+    if (f != NULL) {
+        f->CheckCallCompatibility(field, actuals);
+        type_ = f->return_type();
     } else {
-        base->Check();
-        if (base->type() != Type::errorType) {
-            if (dynamic_cast<This*>(base) == NULL) {
-                // var.func()
-                NamedType *nt = dynamic_cast<NamedType*>(base->type());
-                ClassDecl *c = nt == NULL ? NULL : GetClass(nt);
-                InterfaceDecl *itf = nt == NULL ? NULL : GetInterface(nt);
-                FnDecl *f = c == NULL ? NULL : c->GetMemberFn(field->name());
-                if(f == NULL && itf != NULL) // check interface
-                {
-                    f = itf->GetMemberFn(field->name());
-                }
-                if (f == NULL) {
-                    // Check another possibility: array.length()
-                    if(dynamic_cast<ArrayType*>(base->type()))
-                    {
-                        if(strcmp(field->name(),"length")==0)
-                        {
-                            f = new LengthFn(
-                                *field->location());
-                            type_ = f->return_type();
-                            calledFn = f;
-                        }else
-                            ReportError::FieldNotFoundInBase(field,
-                                                             base->type());
-                    }else
-                        ReportError::FieldNotFoundInBase(field,
-                                                         base->type());
-                } else {
-                    type_ = f->return_type();
-                    calledFn = f;
-                }
-            } else {
-                // this.func()
-                ClassDecl *c = GetCurrentClass(); // must exist
-                FnDecl *f = c->GetMemberFn(field->name());
-                if (f == NULL) {
-                    ReportError::FieldNotFoundInBase(field,
-                                                     base->type());
-                } else {
-                    type_ = f->return_type();
-                    calledFn = f;
-                }
-            }
-        }
+        ReportError::IdentifierNotDeclared(field, LookingForFunction);
+        type_ = Type::errorType;
     }
 
+    return;
+}
+
+void Call::BinaryCheck(void)
+{
+    base->Check();
+    if (base->type() == Type::errorType) {
+        type_ = Type::errorType;
+    } else if (dynamic_cast<ArrayType*>(base->type()) != NULL) {
+        // Check array.length()
+        if (strcmp(field->name(), "length") == 0) {
+            CallCheck(new LengthFn(*field->location()));
+        } else {
+            ReportError::FieldNotFoundInBase(field, base->type());
+            type_ = Type::errorType;
+        }
+    } else if (dynamic_cast<This*>(base) != NULL) {
+        // this.func()
+        CallCheck(GetCurrentClass()->GetMemberFn(field->name()));
+    } else {
+        // var.func()
+        NamedType *nt = dynamic_cast<NamedType*>(base->type());
+        ClassDecl *c = nt == NULL ? NULL : GetClass(nt);
+        InterfaceDecl *itf = nt == NULL ? NULL : GetInterface(nt);
+        FnDecl *f = (c != NULL   ? c->GetMemberFn(field->name()) :
+                     itf != NULL ? itf->GetMemberFn(field->name()) :
+                     /* Else */    NULL);
+        CallCheck(f);
+    }
+
+    return;
+}
+
+void Call::CallCheck(FnDecl *f)
+{
+    if (f != NULL) {
+        f->CheckCallCompatibility(field, actuals);
+        type_ = f->return_type();
+    } else {
+        ReportError::FieldNotFoundInBase(field, base->type());
+        type_ = Type::errorType;
+    }
+
+    return;
+}
+
+void Call::DoCheck(void)
+{
     for (int i = 0; i < actuals->NumElements(); i++) {
         actuals->Nth(i)->Check();
     }
-
-    // Check type agreement between caller and callee.
-    if (calledFn != NULL) {
-        calledFn->CheckCallCompatibility(field, actuals);
+    if (base == NULL) {
+        UnaryCheck();
+    } else {
+        BinaryCheck();
     }
 
     return;

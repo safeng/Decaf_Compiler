@@ -216,6 +216,11 @@ class FieldAccess : public LValue
  * and sort it out later. */
 class Call : public Expr
 {
+    private:
+        void UnaryCheck(void);
+        void BinaryCheck(void);
+        void CallCheck(FnDecl *f);
+
     protected:
         Expr *base; // will be NULL if no explicit base
         Identifier *field;
