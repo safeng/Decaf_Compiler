@@ -384,11 +384,9 @@ void ArrayAccess::DoCheck(void)
         ReportError::BracketsOnNonArray(base_);
         type_ = Type::errorType;
     }
-    if (subscript_->type() == Type::errorType) {
-        type_ = Type::errorType;
-    } else if (subscript_->type() != Type::intType) {
+    if (subscript_->type() != Type::intType &&
+        subscript_->type() != Type::errorType) {
         ReportError::SubscriptNotInteger(subscript_);
-        type_ = Type::errorType;
     }
     // Assign the type of base to whole expression
     if (type_ == NULL) {
@@ -606,13 +604,11 @@ void NewArrayExpr::DoCheck(void)
     if (size->type() != Type::errorType &&
         size->type() != Type::intType) {
         ReportError::NewArraySizeNotInteger(size);
-        type_ = Type::errorType;
     }
     elemType->Check();
     if (size->type() == Type::errorType) {
         type_ = Type::errorType;
-    }
-    if (type_ != Type::errorType) {
+    } else {
         type_ = new ArrayType(elemType);
     }
 
