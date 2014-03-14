@@ -222,6 +222,16 @@ bool ClassDecl::IsTypeCompatibleWith(NamedType *t)
     return comp;
 }
 
+bool ClassDecl::IsSubsetOf(NamedType *t)
+{
+    bool ss = strcmp(t->id()->name(), id_->name()) == 0;
+    if (!ss && extends_ != NULL && GetClass(extends_) != NULL) {
+        ss = GetClass(extends_)->IsSubsetOf(t);
+    }
+
+    return ss;
+}
+
 void InterfaceDecl::DoCheck(void)
 {
     // (1) Conflicting declaration check

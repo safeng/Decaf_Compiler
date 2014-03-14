@@ -67,7 +67,8 @@ class ClassDecl : public Decl
         VarDecl *GetVar(Identifier *i);
         FnDecl *GetMemberFn(char *name);
         FnDecl *GetFn(Identifier *i);
-        bool IsTypeCompatibleWith(NamedType *baseClass); // test whether this class is compatible with baseClass
+        bool IsTypeCompatibleWith(NamedType *baseClass);
+        bool IsSubsetOf(NamedType *t);
 };
 
 class InterfaceDecl : public Decl
