@@ -462,7 +462,8 @@ void FieldAccess::ForeignAccessCheck(void)
             type_ = Type::errorType;
         } else {
             v->Check();
-            if (c != GetCurrentClass()) {
+            if (c != GetCurrentClass() &&
+                !GetCurrentClass()->IsTypeCompatibleWith(bnt)) {
                 ReportError::InaccessibleField(field, bt);
                 type_ = Type::errorType;
             } else {
