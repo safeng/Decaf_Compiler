@@ -1,14 +1,4 @@
-/* File: ast_decl.h
- * ----------------
- * In our parse tree, Decl nodes are used to represent and
- * manage declarations. There are 4 subclasses of the base class,
- * specialized for declarations of variables, functions, classes,
- * and interfaces.
- *
- * pp3: You will need to extend the Decl classes to implement
- * semantic processing including detection of declaration conflicts
- * and managing scoping issues.
- */
+/*** ast_decl.h - ASTs of declarations *******************************/
 
 #ifndef _H_ast_decl
 #define _H_ast_decl
@@ -29,7 +19,9 @@ class Decl : public Node
 
     public:
         Decl(Identifier *i);
+
         Identifier *id(void);
+
         friend std::ostream& operator<<(std::ostream& out, Decl *d);
 };
 
@@ -37,10 +29,12 @@ class VarDecl : public Decl
 {
     protected:
         Type *type_;
+
         void DoCheck(void);
 
     public:
         VarDecl(Identifier *name, Type *type);
+
         Type *type(void);
 };
 
@@ -48,12 +42,14 @@ class ClassDecl : public Decl
 {
     private:
         Hashtable<Decl*> *sym_table_;
+
         void MergeSymbolTable(ClassDecl *base);
 
     protected:
         List<Decl*> *members_;
         NamedType *extends_;
         List<NamedType*> *implements_;
+
         void DoCheck(void);
 
     public:
@@ -63,8 +59,10 @@ class ClassDecl : public Decl
         Hashtable<Decl*> *sym_table(void);
 
         ClassDecl *GetCurrentClass(void);
+        ClassDecl *GetClass(NamedType *t);
         VarDecl *GetMemberVar(char *name);
         VarDecl *GetVar(Identifier *i);
+        InterfaceDecl *GetInterface(NamedType *t);
         FnDecl *GetMemberFn(char *name);
         FnDecl *GetFn(Identifier *i);
         bool IsTypeCompatibleWith(NamedType *baseClass);
@@ -103,12 +101,15 @@ class FnDecl : public Decl
 
     public:
         FnDecl(Identifier *n, Type *ret, List<VarDecl*> *form);
+
         Type *return_type(void);
         List<VarDecl*> *formals(void);
         void set_body(Stmt *b);
-        VarDecl *GetVar(Identifier *i);
 
-        // signitures equivalent to another function
+        ClassDecl *GetClass(NamedType *t);
+        VarDecl *GetVar(Identifier *i);
+        InterfaceDecl *GetInterface(NamedType *t);
+        FnDecl *GetFn(Identifier *i);
         bool IsSigEquivalentTo(FnDecl *other);
         void CheckCallCompatibility(Identifier *caller,
                                     List<Expr*> *actuals);
@@ -117,8 +118,8 @@ class FnDecl : public Decl
 
 class LengthFn : public FnDecl
 {
-	public:
-		LengthFn(yyltype loc);
+    public:
+        LengthFn(yyltype loc);
 };
 
 #endif

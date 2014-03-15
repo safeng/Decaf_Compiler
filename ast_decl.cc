@@ -7,6 +7,11 @@
 #include "hashtable.h"
 #include "list.h"
 
+Identifier *Decl::id(void)
+{
+    return id_;
+}
+
 Decl::Decl(Identifier *i) : Node(*i->location())
 {
     Assert(i != NULL);
@@ -15,24 +20,11 @@ Decl::Decl(Identifier *i) : Node(*i->location())
     return;
 }
 
-Identifier *Decl::id(void)
-{
-    return id_;
-}
-
 std::ostream& operator<<(std::ostream& out, Decl *d)
 {
     return out << d->id_;
 }
 
-
-VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
-{
-    Assert(n != NULL && t != NULL);
-    (type_ = t)->set_parent(this);
-
-    return;
-}
 
 void VarDecl::DoCheck(void)
 {
@@ -41,6 +33,14 @@ void VarDecl::DoCheck(void)
         // change type to errorType to avoid cascading errors
         type_ = Type::errorType;
     }
+    return;
+}
+
+VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n)
+{
+    Assert(n != NULL && t != NULL);
+    (type_ = t)->set_parent(this);
+
     return;
 }
 
@@ -66,10 +66,10 @@ void ClassDecl::MergeSymbolTable(ClassDecl *base)
             ReportError::DeclConflict(nd, d);
         } else {
             // Type checking for function override
-            FnDecl * fnBase = dynamic_cast<FnDecl*>(d);
-            FnDecl * fnChild = dynamic_cast<FnDecl*>(nd);
+            FnDecl *fnBase = dynamic_cast<FnDecl*>(d);
+            FnDecl *fnChild = dynamic_cast<FnDecl*>(nd);
             // Self check first to avoid cascading errors
-            fnChild->Check();
+            //fnChild->Check();
             // check return type and formals
             if (!fnChild->IsSigEquivalentTo(fnBase)) {
                 sym_table_->Enter(name, fnBase);
@@ -176,6 +176,17 @@ ClassDecl *ClassDecl::GetCurrentClass(void)
     return this;
 }
 
+ClassDecl *ClassDecl::GetClass(NamedType *t)
+{
+    Decl *d = sym_table_->Lookup(t->id()->name());
+    ClassDecl *r = dynamic_cast<ClassDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetClass(t); // maybe global scope
+    }
+
+    return r;
+}
+
 VarDecl *ClassDecl::GetMemberVar(char *n)
 {
     return dynamic_cast<VarDecl*>(sym_table_->Lookup(n));
@@ -183,12 +194,24 @@ VarDecl *ClassDecl::GetMemberVar(char *n)
 
 VarDecl *ClassDecl::GetVar(Identifier *i)
 {
-    VarDecl *memVar = GetMemberVar(i->name());
-    if (memVar == NULL) {
-        memVar = parent()->GetVar(i); // maybe global scope
+    Decl *d = sym_table_->Lookup(i->name());
+    VarDecl *r = dynamic_cast<VarDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetVar(i); // maybe global scope
     }
 
-    return memVar;
+    return r;
+}
+
+InterfaceDecl *ClassDecl::GetInterface(NamedType *t)
+{
+    Decl *d = sym_table_->Lookup(t->id()->name());
+    InterfaceDecl *r = dynamic_cast<InterfaceDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetInterface(t); // maybe global scope
+    }
+
+    return r;
 }
 
 FnDecl *ClassDecl::GetMemberFn(char *n)
@@ -198,12 +221,13 @@ FnDecl *ClassDecl::GetMemberFn(char *n)
 
 FnDecl *ClassDecl::GetFn(Identifier *i)
 {
-    FnDecl *memFn = GetMemberFn(i->name());
-    if (memFn == NULL) {
-        memFn = parent()->GetFn(i); // global function
+    Decl *d = sym_table_->Lookup(i->name());
+    FnDecl *r = dynamic_cast<FnDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetFn(i); // maybe global scope
     }
 
-    return memFn;
+    return r;
 }
 
 bool ClassDecl::IsTypeCompatibleWith(NamedType *t)
@@ -315,6 +339,11 @@ void FnDecl::DoCheck(void)
     return;
 }
 
+FnDecl *FnDecl::GetCurrentFn(void)
+{
+    return this;
+}
+
 FnDecl::FnDecl(Identifier *n, Type *ret, List<VarDecl*> *form) :
     Decl(n)
 {
@@ -344,20 +373,48 @@ void FnDecl::set_body(Stmt *b)
     return;
 }
 
-VarDecl *FnDecl::GetVar(Identifier *i)
+ClassDecl *FnDecl::GetClass(NamedType *t)
 {
-    char *n = i->name();
-    VarDecl *decl = dynamic_cast<VarDecl*>(sym_table_->Lookup(n));
-    if (decl == NULL) {
-        decl = parent()->GetVar(i);
+    Decl *d = sym_table_->Lookup(t->id()->name());
+    ClassDecl *r = dynamic_cast<ClassDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetClass(t); // maybe global scope
     }
 
-    return decl;
+    return r;
 }
 
-FnDecl *FnDecl::GetCurrentFn(void)
+VarDecl *FnDecl::GetVar(Identifier *i)
 {
-    return this;
+    Decl *d = sym_table_->Lookup(i->name());
+    VarDecl *r = dynamic_cast<VarDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetVar(i); // maybe global scope
+    }
+
+    return r;
+}
+
+InterfaceDecl *FnDecl::GetInterface(NamedType *t)
+{
+    Decl *d = sym_table_->Lookup(t->id()->name());
+    InterfaceDecl *r = dynamic_cast<InterfaceDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetInterface(t); // maybe global scope
+    }
+
+    return r;
+}
+
+FnDecl *FnDecl::GetFn(Identifier *i)
+{
+    Decl *d = sym_table_->Lookup(i->name());
+    FnDecl *r = dynamic_cast<FnDecl*>(d);
+    if (d == NULL) {
+        r = parent()->GetFn(i); // maybe global scope
+    }
+
+    return r;
 }
 
 bool FnDecl::IsSigEquivalentTo(FnDecl *other)
@@ -397,7 +454,8 @@ void FnDecl::CheckCallCompatibility(Identifier *caller,
 }
 
 LengthFn::LengthFn(yyltype loc):
-    FnDecl(new Identifier(loc, "length"), Type::intType, new List<VarDecl*>)
+    FnDecl(new Identifier(loc, "length"), Type::intType,
+           new List<VarDecl*>)
 {
     return;
 }
